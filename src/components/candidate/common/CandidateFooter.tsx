@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Footer: React.FC = () => {
+const CandidateFooter: React.FC = () => {
   return (
     <footer className="w-full bg-surface-container-lowest mt-space-2xl shadow-[0_-1px_12px_rgba(0,0,0,0.03)]">
       <div className="max-w-layout-container-max mx-auto px-gutter-mobile lg:px-gutter-desktop py-space-2xl">
@@ -57,4 +57,4 @@ const Footer: React.FC = () => {
   );
 };
 
-export default Footer;
+export default CandidateFooter;
