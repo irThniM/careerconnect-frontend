@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Header: React.FC = () => {
+const CandidateHeader: React.FC = () => {
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-surface/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="bg-surface-container-high/60 py-space-2xs px-gutter-mobile lg:px-gutter-desktop">
@@ -51,4 +51,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default Header;
+export default CandidateHeader;
