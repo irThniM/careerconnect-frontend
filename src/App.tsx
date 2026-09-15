@@ -2,6 +2,16 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 // Layouts
 import CandidateLayout from './layouts/CandidateLayout';
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+import AuthLayout from './layouts/AuthLayout';
+import Home from './pages/candidate/Home';
+import CandidateLogin from './pages/auth/CandidateLogin';
+import CandidateRegister from './pages/auth/CandidateRegister';
+import EmailVerification from './pages/auth/EmailVerification'; // Import trang xác thực
+=======
+=======
+>>>>>>> develop
 import EmployerLayout from './layouts/EmployerLayout'; 
 import EmployerDashboardLayout from './layouts/EmployerDashboardLayout';
 
@@ -9,12 +19,20 @@ import EmployerDashboardLayout from './layouts/EmployerDashboardLayout';
 import CandidateHome from './pages/candidate/Home'; 
 import CandidateLogin from './pages/candidate/CandidateLogin'; 
 import CandidateRegister from './pages/candidate/CandidateRegister'; 
+<<<<<<< HEAD
+import EmailVerification from './pages/candidate/EmailVerification';
+=======
+>>>>>>> develop
 
 // Pages Nhà Tuyển Dụng (Employer)
 import EmployerHome from './pages/employer/Home'; 
 import EmployerDashboard from './pages/employer/Dashboard'; 
 import EmployerLogin from './pages/employer/EmployerLogin'; 
 import EmployerRegister from './pages/employer/EmployerRegister'; 
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> develop
 
 function App() {
   return (
@@ -31,6 +49,19 @@ function App() {
           <Route index element={<CandidateHome />} />
         </Route>
 
+<<<<<<< HEAD
+<<<<<<< Updated upstream
+        {/* Route dùng Layout Auth */}
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<CandidateLogin />} />
+          <Route path="/register" element={<CandidateRegister />} />
+          <Route path="/verify-email" element={<EmailVerification />} /> {/* Thêm route này */}
+=======
+        {/* Trang xác thực email */}
+        <Route path="/verify-email" element={<EmailVerification />} />
+
+=======
+>>>>>>> develop
 
         {/* --- LUỒNG NHÀ TUYỂN DỤNG (EMPLOYER) --- */}
         
@@ -46,6 +77,10 @@ function App() {
         {/* KHU VỰC QUẢN TRỊ (Dùng Layout mới có Sidebar dọc) */}
         <Route path="/employer/dashboard" element={<EmployerDashboardLayout />}>
           <Route index element={<EmployerDashboard />} />
+<<<<<<< HEAD
+>>>>>>> Stashed changes
+=======
+>>>>>>> develop
         </Route>
       </Routes>
     </BrowserRouter>
