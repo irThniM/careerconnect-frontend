@@ -1,8 +1,50 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const CandidateLogin: React.FC = () => {
+  const navigate = useNavigate();
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('https://localhost:7203/api/Auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ Email: email, Password: password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      }
+
+      // Lưu trữ thông tin và FullName vào localStorage
+      localStorage.setItem('accessToken', data.accessToken);
+      localStorage.setItem('refreshToken', data.refreshToken);
+      localStorage.setItem('userEmail', data.email);
+      localStorage.setItem('fullName', data.fullName || data.email.split('@')[0]);
+      localStorage.setItem('accountType', data.accountType);
+      localStorage.setItem('userId', data.userId);
+
+      // Chuyển hướng về trang chủ kèm tín hiệu toast
+      navigate('/', { state: { loginSuccess: true, fullName: data.fullName || data.email } });
+
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Đã có lỗi xảy ra trong quá trình đăng nhập.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col w-full">
@@ -55,29 +97,46 @@ const CandidateLogin: React.FC = () => {
               </div>
             </div>
 
+            {errorMessage && (
+              <div className="mb-space-md p-3 rounded-lg bg-error-container text-on-error-container text-body-compact font-medium">
+                {errorMessage}
+              </div>
+            )}
+
             {/* Form */}
-            <form className="space-y-space-md" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-space-md" onSubmit={handleLogin}>
               <div className="flex flex-col gap-space-2xs">
-                <label className="font-metadata-label text-metadata-label font-semibold text-on-surface">
-                  Email hoặc Số điện thoại <span className="text-error">*</span>
+                <label className="font-metadata-label text-metadata-label font-semibold text-on-surface" htmlFor="email-input">
+                  Email đăng nhập <span className="text-error">*</span>
                 </label>
                 <div className="relative flex items-center">
                   <span className="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-[20px]">mail</span>
-                  <input className="w-full h-11 pl-11 pr-space-md rounded-lg bg-surface-container-low text-on-surface font-body-regular text-body-regular placeholder:text-outline focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200" placeholder="name@example.com hoặc 0912345678" required type="text" />
+                  <input 
+                    id="email-input"
+                    className="w-full h-11 pl-11 pr-space-md rounded-lg bg-surface-container-low text-on-surface font-body-regular text-body-regular placeholder:text-outline focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200" 
+                    placeholder="name@example.com" 
+                    required 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
               </div>
               
               <div className="flex flex-col gap-space-2xs">
-                <label className="font-metadata-label text-metadata-label font-semibold text-on-surface">
+                <label className="font-metadata-label text-metadata-label font-semibold text-on-surface" htmlFor="password-input">
                   Mật khẩu <span className="text-error">*</span>
                 </label>
                 <div className="relative flex items-center">
                   <span className="material-symbols-outlined absolute left-space-md text-outline pointer-events-none text-[20px]">lock</span>
                   <input 
+                    id="password-input"
                     className="w-full h-11 pl-11 pr-11 rounded-lg bg-surface-container-low text-on-surface font-body-regular text-body-regular placeholder:text-outline focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200" 
                     placeholder="Nhập mật khẩu của bạn" 
                     required 
                     type={showPassword ? "text" : "password"} 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <button 
                     type="button"
@@ -97,14 +156,20 @@ const CandidateLogin: React.FC = () => {
                 <Link to="#" className="font-body-compact text-body-compact font-semibold text-primary hover:underline transition-all">Quên mật khẩu?</Link>
               </div>
 
-              <button className="w-full h-12 mt-space-xs rounded-lg bg-primary-container hover:bg-primary text-on-primary font-job-title-card text-job-title-card font-semibold flex items-center justify-center gap-space-xs shadow-md hover:shadow-lg transition-all duration-200 active:scale-[0.99]" type="submit">
-                <span>Đăng nhập ngay</span>
-                <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+              <button 
+                className={`w-full h-12 mt-space-xs rounded-lg font-job-title-card text-job-title-card font-semibold flex items-center justify-center gap-space-xs shadow-md transition-all duration-200 ${
+                  isLoading ? 'bg-slate-300 text-slate-500 cursor-not-allowed' : 'bg-primary-container hover:bg-primary text-on-primary hover:shadow-lg active:scale-[0.99]'
+                }`} 
+                type="submit"
+                disabled={isLoading}
+              >
+                <span>{isLoading ? 'Đang xác thực...' : 'Đăng nhập ngay'}</span>
+                {!isLoading && <span className="material-symbols-outlined text-[20px]">arrow_forward</span>}
               </button>
             </form>
           </div>
 
-          {/* CỘT PHẢI: Banner Quảng Cáo AI */}
+          {/* CỘT PHẢI: Banner Quảng Cáo AI đầy đủ như cũ */}
           <div className="lg:col-span-5 flex flex-col gap-space-lg">
             <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary via-primary-container to-tertiary text-on-primary p-space-xl shadow-xl">
               <div className="relative z-10 flex items-center gap-space-xs mb-space-md">
@@ -120,7 +185,6 @@ const CandidateLogin: React.FC = () => {
                 Sử dụng thuật toán học máy đối sánh dữ liệu thực tế giữa hồ sơ của bạn với tiêu chí tuyển dụng từ các tập đoàn hàng đầu Việt Nam.
               </p>
               
-              {/* Các box tính năng nhỏ */}
               <div className="relative z-10 space-y-space-sm">
                 <div className="bg-surface-container-lowest/10 backdrop-blur-md rounded-lg p-space-sm flex items-start gap-space-sm">
                   <div className="w-10 h-10 rounded-lg bg-surface-container-lowest/20 flex-shrink-0 flex items-center justify-center text-secondary-fixed">
@@ -137,7 +201,6 @@ const CandidateLogin: React.FC = () => {
               </div>
             </div>
             
-            {/* Box thống kê */}
             <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-md grid grid-cols-2 gap-space-md text-center">
               <div className="flex flex-col items-center">
                 <span className="font-headline-md text-headline-md font-bold text-primary">500,000+</span>

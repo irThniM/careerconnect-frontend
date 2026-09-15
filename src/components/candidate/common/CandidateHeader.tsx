@@ -1,7 +1,24 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const CandidateHeader: React.FC = () => {
+  const navigate = useNavigate();
+  const [fullName, setFullName] = useState<string | null>(null);
+
+  // Kiểm tra trạng thái đăng nhập khi header được tải
+  useEffect(() => {
+    const storedName = localStorage.getItem('fullName');
+    if (storedName) {
+      setFullName(storedName);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setFullName(null);
+    navigate('/login');
+  };
+
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-surface/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="bg-surface-container-high/60 py-space-2xs px-gutter-mobile lg:px-gutter-desktop">
@@ -43,8 +60,33 @@ const CandidateHeader: React.FC = () => {
             <span>Dành cho NTD</span>
             <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
           </Link>
-          <Link to="/login" className="px-space-sm py-space-xs rounded-xl font-body-compact text-body-compact font-medium text-on-surface-variant hover:text-on-surface transition-colors">Đăng nhập</Link>
-          <Link to="/register" className="px-space-md py-space-xs rounded-xl bg-primary hover:bg-primary-container text-on-primary font-body-compact text-body-compact font-semibold transition-all shadow-[0_1px_4px_rgba(0,40,142,0.2)]">Đăng ký</Link>
+
+          {/* --- KHU VỰC THAY ĐỔI: TỰ ĐỘNG ĐỔI TRẠNG THÁI KHI ĐÃ ĐĂNG NHẬP --- */}
+          {localStorage.getItem('accessToken') ? (
+            <div className="flex items-center gap-3 pl-2 border-l border-outline-variant">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-sm">
+                  {(localStorage.getItem('fullName') || 'U').charAt(0).toUpperCase()}
+                </div>
+                <span className="hidden md:inline font-semibold text-on-surface text-sm">
+                  {localStorage.getItem('fullName')}
+                </span>
+              </div>
+              <button 
+                onClick={handleLogout}
+                className="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-error-container hover:text-on-error-container text-on-surface-variant transition-colors text-xs font-semibold flex items-center gap-1"
+                title="Đăng xuất"
+              >
+                <span className="material-symbols-outlined text-[16px]">logout</span>
+                <span className="hidden sm:inline">Đăng xuất</span>
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link to="/login" className="px-space-sm py-space-xs rounded-xl font-body-compact text-body-compact font-medium text-on-surface-variant hover:text-on-surface transition-colors">Đăng nhập</Link>
+              <Link to="/register" className="px-space-md py-space-xs rounded-xl bg-primary hover:bg-primary-container text-on-primary font-body-compact text-body-compact font-semibold transition-all shadow-[0_1px_4px_rgba(0,40,142,0.2)]">Đăng ký</Link>
+            </>
+          )}
         </div>
       </div>
     </header>
