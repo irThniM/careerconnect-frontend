@@ -1,9 +1,60 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const EmployerLogin: React.FC = () => {
+  const navigate = useNavigate();
+  
+  // Quản lý trạng thái form
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
+  // Quản lý trạng thái API
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Hàm xử lý Đăng nhập
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setIsLoading(true);
+
+    try {
+      // Bác kiểm tra lại endpoint Login bên Backend xem đúng đường dẫn này chưa nhé
+      const response = await fetch('https://localhost:7203/api/Auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Tài khoản hoặc mật khẩu không chính xác.');
+      }
+
+      // Lưu Token vào LocalStorage để dùng cho các API sau này
+      if (data.token || data.accessToken) {
+        localStorage.setItem('accessToken', data.token || data.accessToken);
+      }
+
+      // Chuyển hướng vào trang Dashboard
+      navigate('/employer/dashboard');
+
+    } catch (error: any) {
+      let errorMessage = error.message;
+      if (errorMessage === 'Failed to fetch') {
+        errorMessage = 'Không thể kết nối máy chủ. Vui lòng kiểm tra Backend.';
+      }
+      setErrorMsg(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="bg-[#f4f5f7] font-sans text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+      
       {/* HEADER TỐI GIẢN */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-[0_1px_3px_rgba(0,0,0,0.04)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
@@ -63,6 +114,14 @@ const EmployerLogin: React.FC = () => {
             </div>
           </div>
 
+          {/* HIỂN THỊ LỖI */}
+          {errorMsg && (
+            <div className="mb-5 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl p-3.5 text-sm font-medium flex items-center gap-2 shadow-sm animate-in fade-in duration-200">
+              <span className="material-symbols-outlined text-[18px]">error</span>
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
           {/* FORM CARD */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8">
             {/* GOOGLE WORKSPACE LOGIN */}
@@ -87,7 +146,7 @@ const EmployerLogin: React.FC = () => {
             </div>
 
             {/* LOGIN FORM */}
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleLoginSubmit}>
               {/* EMAIL INPUT */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
@@ -100,7 +159,15 @@ const EmployerLogin: React.FC = () => {
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                     <span className="material-symbols-outlined text-[18px]">mail</span>
                   </span>
-                  <input type="email" id="email" defaultValue="hr@fpt-software.com" placeholder="name@company.com" className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all text-slate-900 placeholder:text-slate-400" />
+                  <input 
+                    type="email" 
+                    id="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@company.com" 
+                    required
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all text-slate-900 placeholder:text-slate-400" 
+                  />
                 </div>
               </div>
 
@@ -118,9 +185,21 @@ const EmployerLogin: React.FC = () => {
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
                     <span className="material-symbols-outlined text-[18px]">lock</span>
                   </span>
-                  <input type="password" id="password" defaultValue="123456789" placeholder="Nhập mật khẩu tài khoản" className="w-full pl-10 pr-10 py-2.5 bg-slate-50/50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all text-slate-900 placeholder:text-slate-400" />
-                  <button type="button" className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600">
-                    <span className="material-symbols-outlined text-[18px]">visibility</span>
+                  <input 
+                    type={showPassword ? "text" : "password"} 
+                    id="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Nhập mật khẩu tài khoản" 
+                    required
+                    className="w-full pl-10 pr-10 py-2.5 bg-slate-50/50 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all text-slate-900 placeholder:text-slate-400" 
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 focus:outline-none"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">{showPassword ? "visibility_off" : "visibility"}</span>
                   </button>
                 </div>
               </div>
@@ -138,10 +217,23 @@ const EmployerLogin: React.FC = () => {
 
               {/* SUBMIT CTA */}
               <div className="pt-3">
-                <Link to="/employer/dashboard" className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition-all duration-150 shadow-md shadow-emerald-700/20 flex items-center justify-center space-x-2 group">
-                  <span>Đăng nhập hệ thống</span>
-                  <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
-                </Link>
+                <button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:opacity-70 text-white font-bold rounded-xl text-sm transition-all duration-150 shadow-md shadow-emerald-700/20 flex items-center justify-center space-x-2 group"
+                >
+                  {isLoading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Đang xác thực...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Đăng nhập hệ thống</span>
+                      <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-0.5">arrow_forward</span>
+                    </>
+                  )}
+                </button>
               </div>
             </form>
 
@@ -182,7 +274,7 @@ const EmployerLogin: React.FC = () => {
         </div>
       </main>
 
-{/* BOTTOM SIMPLE FOOTER */}
+      {/* BOTTOM SIMPLE FOOTER */}
       <footer className="bg-white border-t border-slate-200 py-3.5 text-xs text-slate-500 text-center">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div>

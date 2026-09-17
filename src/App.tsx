@@ -22,29 +22,22 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* --- LUỒNG ỨNG VIÊN (CANDIDATE) --- */}
-        
-        {/* Các trang Đăng nhập / Đăng ký / Xác thực email đứng độc lập */}
         <Route path="/login" element={<CandidateLogin />} />
         <Route path="/register" element={<CandidateRegister />} />
         <Route path="/verify-email" element={<EmailVerification />} />
 
-        {/* Các trang nằm trong Layout của Ứng viên (có thanh menu to) */}
         <Route path="/" element={<CandidateLayout />}>
           <Route index element={<CandidateHome />} />
         </Route>
 
         {/* --- LUỒNG NHÀ TUYỂN DỤNG (EMPLOYER) --- */}
-        
-        {/* Đăng nhập & Đăng ký NTD */}
         <Route path="/employer/login" element={<EmployerLogin />} />
         <Route path="/employer/register" element={<EmployerRegister />} />
 
-        {/* Landing Page của NTD (Dùng Layout có menu ngang) */}
         <Route path="/employer" element={<EmployerLayout />}>
           <Route index element={<EmployerHome />} /> 
         </Route>
 
-        {/* KHU VỰC QUẢN TRỊ (Dùng Layout có Sidebar dọc) */}
         <Route path="/employer/dashboard" element={<EmployerDashboardLayout />}>
           <Route index element={<EmployerDashboard />} />
         </Route>
