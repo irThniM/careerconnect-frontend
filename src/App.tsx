@@ -16,6 +16,7 @@ import EmployerHome from './pages/employer/Home';
 import EmployerDashboard from './pages/employer/Dashboard'; 
 import EmployerLogin from './pages/employer/EmployerLogin'; 
 import EmployerRegister from './pages/employer/EmployerRegister'; 
+import CompanyProfile from './pages/employer/CompanyProfile';
 
 function App() {
   return (
@@ -41,6 +42,8 @@ function App() {
         <Route path="/employer/dashboard" element={<EmployerDashboardLayout />}>
           <Route index element={<EmployerDashboard />} />
         </Route>
+
+        <Route path="/employer/profile" element={<CompanyProfile />} />
       </Routes>
     </BrowserRouter>
   );
