@@ -28,21 +28,14 @@ function App() {
     <BrowserRouter>
       <Routes>
         {/* --- LUỒNG QUẢN TRỊ (ADMIN) --- */}
-        {/* Đặt link login hơi "dị" một chút để bảo mật, người dùng bình thường không đoán được */}
         <Route path="/admin-secure-login" element={<AdminLoginPage />} />
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route path="dashboard" element={<AdminDashboard />} /> {/* Thay thế dòng div cũ */}
-          <Route path="users" element={<div className="text-2xl font-bold">Trang Quản lý Người dùng</div>} />
-          <Route path="companies" element={<div className="text-2xl font-bold">Trang Phê duyệt Công ty</div>} />
-        </Route>
         
-        {/* Nhóm Route được bảo vệ bởi AdminLayout */}
+        {/* Đã xóa cụm Route dư thừa, chỉ giữ lại một nhóm Route bảo vệ bởi AdminLayout */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route path="dashboard" element={<div className="text-2xl font-bold">Trang Tổng quan Dashboard</div>} />
+          <Route path="dashboard" element={<AdminDashboard />} /> 
           <Route path="users" element={<div className="text-2xl font-bold">Trang Quản lý Người dùng</div>} />
           <Route path="companies" element={<div className="text-2xl font-bold">Trang Phê duyệt Công ty</div>} />
         </Route>
-
 
         {/* --- LUỒNG ỨNG VIÊN (CANDIDATE) --- */}
         <Route path="/login" element={<CandidateLogin />} />
@@ -52,7 +45,6 @@ function App() {
         <Route path="/" element={<CandidateLayout />}>
           <Route index element={<CandidateHome />} />
         </Route>
-
 
         {/* --- LUỒNG NHÀ TUYỂN DỤNG (EMPLOYER) --- */}
         <Route path="/employer/login" element={<EmployerLogin />} />
