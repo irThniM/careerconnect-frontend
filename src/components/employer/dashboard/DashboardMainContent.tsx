@@ -57,7 +57,11 @@ const DashboardMainContent: React.FC<Props> = ({ isVerified, companyName, userEm
             <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
               <span className="material-symbols-outlined text-[48px] text-slate-300 mb-3">post_add</span>
               <p className="text-slate-500 font-medium text-sm">Chưa có tin tuyển dụng nào.</p>
-              <button disabled={!isVerified} className="mt-3 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-sm shadow-sm hover:bg-slate-50 disabled:opacity-50">
+              <button 
+                disabled={!isVerified} 
+                onClick={() => navigate('/employer/jobs/create')}
+                className="mt-3 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-sm shadow-sm hover:bg-slate-50 disabled:opacity-50"
+              >
                 Tạo tin đầu tiên
               </button>
             </div>

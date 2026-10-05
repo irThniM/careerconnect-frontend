@@ -10,36 +10,55 @@ import DashboardMainContent from '../../components/employer/dashboard/DashboardM
 interface DecodedToken {
   sub: string;
   email: string;
-  status: string; 
   role: string;
-  companyName?: string; // Đã bổ sung trường này
+  // Bỏ trường status ở đây đi vì ta sẽ không lấy từ token nữa
 }
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [userStatus, setUserStatus] = useState<string>('');
+  const [userStatus, setUserStatus] = useState<string>('PENDING'); // Mặc định khóa
   const [userEmail, setUserEmail] = useState<string>('');
-  const [companyName, setCompanyName] = useState<string>(''); 
+  const [companyName, setCompanyName] = useState<string>('Đang tải...'); 
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
-      // Test UI khi chưa có token
-      setUserStatus('UNVERIFIED'); 
-      setCompanyName('Công ty CP Công nghệ FPT'); 
-      setUserEmail('demo@company.com');
+      navigate('/employer/login');
       return;
     }
+    
     try {
       const decoded = jwtDecode<DecodedToken>(token);
-      setUserStatus(decoded.status || 'UNVERIFIED');
-      setCompanyName(decoded.companyName || 'Doanh nghiệp của bạn');
       setUserEmail(decoded.email || '');
+
+      // GỌI API LẤY TRẠNG THÁI REAL-TIME TỪ DATABASE (KHÔNG CẦN LOGIN LẠI)
+      const fetchCompanyProfile = async () => {
+        try {
+          const response = await fetch('https://localhost:7203/api/Company/my-profile', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            // Cập nhật trạng thái và tên công ty trực tiếp từ Database
+            setUserStatus(data.status || 'PENDING');
+            setCompanyName(data.companyName || 'Doanh nghiệp của bạn');
+          }
+        } catch (error) {
+          console.error('Lỗi khi lấy thông tin Dashboard:', error);
+        }
+      };
+
+      fetchCompanyProfile();
+
     } catch (error) {
       navigate('/employer/login');
     }
   }, [navigate]);
 
+  // Nếu status từ DB trả về là ACTIVE -> Mở khóa toàn bộ tính năng
   const isVerified = userStatus === 'ACTIVE';
 
   return (

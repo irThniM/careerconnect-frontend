@@ -1,10 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
   isVerified: boolean;
 }
 
 const DashboardHeader: React.FC<Props> = ({ isVerified }) => {
+  const navigate = useNavigate();
+
   return (
     <header className="sticky top-0 h-16 bg-white/90 backdrop-blur-md shadow-[0_1px_2px_rgba(0,0,0,0.03)] z-40 flex items-center justify-between px-8 border-b border-slate-100">
       <div className="flex items-center gap-4 flex-1 max-w-lg">
@@ -16,6 +19,7 @@ const DashboardHeader: React.FC<Props> = ({ isVerified }) => {
       <div className="flex items-center gap-6">
         <button 
           disabled={!isVerified}
+          onClick={() => navigate('/employer/jobs/create')}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-colors ${isVerified ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
         >
           <span className="material-symbols-outlined text-[18px]">{isVerified ? 'add' : 'lock'}</span> Đăng tin mới
