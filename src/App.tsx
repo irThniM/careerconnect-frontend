@@ -22,6 +22,8 @@ import CompanyProfile from './pages/employer/CompanyProfile';
 // Pages Quản Trị (Admin)
 import AdminLoginPage from './pages/admin/AdminLoginPage'; 
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminCompaniesPage from './pages/admin/AdminCompaniesPage';
 
 function App() {
   return (
@@ -33,8 +35,8 @@ function App() {
         {/* Đã xóa cụm Route dư thừa, chỉ giữ lại một nhóm Route bảo vệ bởi AdminLayout */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} /> 
-          <Route path="users" element={<div className="text-2xl font-bold">Trang Quản lý Người dùng</div>} />
-          <Route path="companies" element={<div className="text-2xl font-bold">Trang Phê duyệt Công ty</div>} />
+          <Route path="users" element={<AdminUsersPage />} />
+          <Route path="companies" element={<AdminCompaniesPage />} />
         </Route>
 
         {/* --- LUỒNG ỨNG VIÊN (CANDIDATE) --- */}

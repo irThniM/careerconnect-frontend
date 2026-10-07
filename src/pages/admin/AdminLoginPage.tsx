@@ -11,7 +11,7 @@ export default function AdminLoginPage() {
     const [errorMsg, setErrorMsg] = useState('');
 
     const handleLoginSubmit = async (e: React.FormEvent) => {
-        e.preventDefault(); // Chặn reload trang mặc định của HTML
+        e.preventDefault(); 
         setErrorMsg('');
         setIsLoading(true);
 
@@ -28,14 +28,19 @@ export default function AdminLoginPage() {
                 throw new Error(data.message || 'Sai tài khoản hoặc mật khẩu.');
             }
 
-            // Hỗ trợ cả 2 tên biến trả về thường gặp từ .NET (token hoặc accessToken)
             const token = data.token || data.accessToken;
             
             if (token) {
                 localStorage.setItem('accessToken', token);
-                localStorage.setItem('isAdmin', 'true'); // Cắm 1 lá cờ để Layout biết đây là Admin
+                localStorage.setItem('isAdmin', 'true'); 
                 
-                // Delay nửa giây để trải nghiệm UI được mượt mà, kịp thấy icon Loading
+                // Lưu thông tin cá nhân vào Local Storage để Sidebar đọc
+                localStorage.setItem('user', JSON.stringify({
+                    fullName: data.fullName,
+                    email: data.email,
+                    accountType: data.accountType
+                }));
+                
                 setTimeout(() => {
                     navigate('/admin/dashboard');
                 }, 500);
@@ -44,7 +49,7 @@ export default function AdminLoginPage() {
             }
         } catch (err: any) {
             setErrorMsg(err.message === 'Failed to fetch' ? 'Không thể kết nối máy chủ Backend.' : err.message);
-            setIsLoading(false); // Chỉ tắt Loading khi có lỗi để user nhập lại
+            setIsLoading(false); 
         }
     };
 
