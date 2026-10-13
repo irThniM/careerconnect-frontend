@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { apiFetch } from '../../api/client';
 import DashboardMainContent from '../../components/admin/dashboard/DashboardMainContent';
 
 export default function AdminDashboard() {
@@ -15,7 +16,7 @@ export default function AdminDashboard() {
         const fetchDashboardStats = async () => {
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch('https://localhost:7203/api/Admin/dashboard-stats', {
+                const response = await apiFetch('Admin/dashboard-stats', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

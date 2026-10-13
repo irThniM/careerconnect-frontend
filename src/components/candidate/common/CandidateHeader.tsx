@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { clearAuthSession, isAuthenticated } from '../../../utils/auth';
 
 const CandidateHeader: React.FC = () => {
   const navigate = useNavigate();
-  const [fullName, setFullName] = useState<string | null>(null);
-
-  // Kiểm tra trạng thái đăng nhập khi header được tải
-  useEffect(() => {
-    const storedName = localStorage.getItem('fullName');
-    if (storedName) {
-      setFullName(storedName);
-    }
-  }, []);
+  const [isSignedIn, setIsSignedIn] = useState(isAuthenticated);
 
   const handleLogout = () => {
-    localStorage.clear();
-    setFullName(null);
+    clearAuthSession();
+    setIsSignedIn(false);
     navigate('/login');
   };
 
@@ -56,13 +49,15 @@ const CandidateHeader: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-space-sm">
-          <Link to="/employer" className="hidden sm:flex items-center gap-space-2xs px-space-sm py-space-xs rounded-xl bg-surface-container-high text-primary hover:bg-surface-variant transition-colors font-body-compact text-body-compact font-semibold">
-            <span>Dành cho NTD</span>
-            <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-          </Link>
+          {!isSignedIn && (
+            <Link to="/employer" className="hidden sm:flex items-center gap-space-2xs px-space-sm py-space-xs rounded-xl bg-surface-container-high text-primary hover:bg-surface-variant transition-colors font-body-compact text-body-compact font-semibold">
+              <span>Dành cho NTD</span>
+              <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </Link>
+          )}
 
           {/* --- KHU VỰC THAY ĐỔI: TỰ ĐỘNG ĐỔI TRẠNG THÁI KHI ĐÃ ĐĂNG NHẬP --- */}
-          {localStorage.getItem('accessToken') ? (
+          {isSignedIn ? (
             <div className="flex items-center gap-3 pl-2 border-l border-outline-variant">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-sm">

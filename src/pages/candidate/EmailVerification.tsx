@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../api/client';
 import EmailVerificationUI from '../../components/candidate/register/EmailVerificationUI';
 
 const EmailVerification: React.FC = () => {
@@ -12,7 +13,7 @@ const EmailVerification: React.FC = () => {
   const [newEmailInput, setNewEmailInput] = useState(userEmail);
   const [isEditing, setIsEditing] = useState(false);
   const [timeLeft, setTimeLeft] = useState(45);
-  const [canResend, setCanResend] = useState(false);
+  const canResend = timeLeft <= 0;
   const [isVerifying, setIsVerifying] = useState(false);
   
   // State mới cho mã OTP
@@ -26,10 +27,7 @@ const EmailVerification: React.FC = () => {
   }, [location.state, navigate]);
 
   useEffect(() => {
-    if (timeLeft <= 0) {
-      setCanResend(true);
-      return;
-    }
+    if (timeLeft <= 0) return;
     const timer = setInterval(() => {
       setTimeLeft((prev) => prev - 1);
     }, 1000);
@@ -41,7 +39,6 @@ const EmailVerification: React.FC = () => {
       setCurrentEmail(newEmailInput);
       setIsEditing(false);
       setTimeLeft(45);
-      setCanResend(false);
     }
   };
 
@@ -50,7 +47,6 @@ const EmailVerification: React.FC = () => {
       // (Optional) Bác có thể gọi API gửi lại OTP tại đây
       alert('Một mã xác thực mới đã được gửi tới: ' + currentEmail);
       setTimeLeft(45);
-      setCanResend(false);
     }
   };
 
@@ -75,7 +71,7 @@ const EmailVerification: React.FC = () => {
 
     setIsVerifying(true);
     try {
-      const response = await fetch('https://localhost:7203/api/Auth/verify-email', {
+      const response = await apiFetch('Auth/verify-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // Gửi payload chứa Email và Otp thay vì Token

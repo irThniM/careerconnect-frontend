@@ -1,6 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const HeroSection: React.FC = () => {
+  const navigate = useNavigate();
+  const [keyword, setKeyword] = useState('');
+  const [location, setLocation] = useState('');
+  const [employmentType, setEmploymentType] = useState('');
+  const [workMode, setWorkMode] = useState('');
+
+  const submitSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const params = new URLSearchParams();
+    if (keyword.trim()) params.set('keyword', keyword.trim());
+    if (location) params.set('location', location);
+    if (employmentType) params.set('employmentType', employmentType);
+    if (workMode) params.set('workMode', workMode);
+    const query = params.toString();
+    navigate('/jobs' + (query ? '?' + query : ''));
+  };
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-surface-container to-background pb-space-2xl pt-space-xl">
       <div className="max-w-layout-container-max mx-auto px-gutter-mobile lg:px-gutter-desktop">
@@ -24,50 +42,69 @@ const HeroSection: React.FC = () => {
 
         {/* Multi-Criteria Search Hub */}
         <div className="bg-surface-container-lowest rounded-xl p-space-md shadow-xl max-w-5xl mx-auto mb-space-lg">
-          <form className="grid grid-cols-1 md:grid-cols-12 gap-space-xs items-center" onSubmit={(e) => e.preventDefault()}>
+          <form className="grid grid-cols-1 md:grid-cols-12 gap-space-xs items-center" onSubmit={submitSearch}>
             {/* Keyword input */}
             <div className="md:col-span-4 relative flex items-center bg-surface-container-low rounded-lg px-space-sm py-2.5">
               <span className="material-symbols-outlined text-primary text-[20px] mr-space-xs">search</span>
-              <input className="w-full bg-transparent font-body-regular text-body-regular text-on-surface placeholder:text-outline focus:outline-none" placeholder="Vị trí tuyển dụng, kỹ năng, công ty..." type="text" />
+              <input
+                className="w-full bg-transparent font-body-regular text-body-regular text-on-surface placeholder:text-outline focus:outline-none"
+                placeholder="Vị trí tuyển dụng, kỹ năng, công ty..."
+                type="text"
+                value={keyword}
+                onChange={(event) => setKeyword(event.target.value)}
+              />
             </div>
             
             {/* Location Dropdown */}
             <div className="md:col-span-2 relative flex items-center bg-surface-container-low rounded-lg px-space-sm py-2.5">
               <span className="material-symbols-outlined text-outline text-[18px] mr-space-xs">location_on</span>
-              <select className="w-full bg-transparent font-body-compact text-body-compact text-on-surface focus:outline-none appearance-none cursor-pointer pr-4">
+              <select
+                className="w-full bg-transparent font-body-compact text-body-compact text-on-surface focus:outline-none appearance-none cursor-pointer pr-4"
+                value={location}
+                onChange={(event) => setLocation(event.target.value)}
+              >
                 <option value="">Tất cả địa điểm</option>
-                <option value="hanoi">Hà Nội</option>
-                <option value="hcm">TP. Hồ Chí Minh</option>
-                <option value="danang">Đà Nẵng</option>
+                <option value="Hà Nội">Hà Nội</option>
+                <option value="TP. Hồ Chí Minh">TP. Hồ Chí Minh</option>
+                <option value="Đà Nẵng">Đà Nẵng</option>
               </select>
               <span className="material-symbols-outlined text-[16px] text-outline pointer-events-none absolute right-2">expand_more</span>
             </div>
 
-            {/* Salary Dropdown */}
+            {/* Employment type dropdown */}
             <div className="md:col-span-2 relative flex items-center bg-surface-container-low rounded-lg px-space-sm py-2.5">
-              <span className="material-symbols-outlined text-secondary text-[18px] mr-space-xs">payments</span>
-              <select className="w-full bg-transparent font-body-compact text-body-compact text-on-surface focus:outline-none appearance-none cursor-pointer pr-4">
-                <option value="">Mức lương</option>
-                <option value="deal">Thỏa thuận</option>
-                <option value="15-25">15 - 25 triệu</option>
+              <span className="material-symbols-outlined text-secondary text-[18px] mr-space-xs">schedule</span>
+              <select
+                className="w-full bg-transparent font-body-compact text-body-compact text-on-surface focus:outline-none appearance-none cursor-pointer pr-4"
+                value={employmentType}
+                onChange={(event) => setEmploymentType(event.target.value)}
+              >
+                <option value="">Hình thức việc làm</option>
+                <option value="FULL_TIME">Toàn thời gian</option>
+                <option value="PART_TIME">Bán thời gian</option>
               </select>
               <span className="material-symbols-outlined text-[16px] text-outline pointer-events-none absolute right-2">expand_more</span>
             </div>
 
-            {/* Level Dropdown */}
+            {/* Work mode dropdown */}
             <div className="md:col-span-2 relative flex items-center bg-surface-container-low rounded-lg px-space-sm py-2.5">
-              <span className="material-symbols-outlined text-tertiary text-[18px] mr-space-xs">badge</span>
-              <select className="w-full bg-transparent font-body-compact text-body-compact text-on-surface focus:outline-none appearance-none cursor-pointer pr-4">
-                <option value="">Cấp bậc</option>
-                <option value="fresher">Fresher / Junior</option>
-                <option value="middle-senior">Chuyên viên / Senior</option>
+              <span className="material-symbols-outlined text-tertiary text-[18px] mr-space-xs">laptop_mac</span>
+              <select
+                className="w-full bg-transparent font-body-compact text-body-compact text-on-surface focus:outline-none appearance-none cursor-pointer pr-4"
+                value={workMode}
+                onChange={(event) => setWorkMode(event.target.value)}
+              >
+                <option value="">Chế độ làm việc</option>
+                <option value="ONSITE">Tại văn phòng</option>
+                <option value="HYBRID">Hybrid</option>
+                <option value="REMOTE">Từ xa</option>
               </select>
               <span className="material-symbols-outlined text-[16px] text-outline pointer-events-none absolute right-2">expand_more</span>
             </div>
 
             {/* Submit CTA Button */}
             <div className="md:col-span-2">
-              <button className="w-full h-11 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-body-regular text-body-regular font-bold flex items-center justify-center gap-space-2xs transition-all shadow-md active:scale-98" type="button">
+              <button className="w-full h-11 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-body-regular text-body-regular font-bold flex items-center justify-center gap-space-2xs transition-all shadow-md active:scale-98" type="submit">
                 <span>Tìm kiếm</span>
                 <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
               </button>
@@ -79,9 +116,9 @@ const HeroSection: React.FC = () => {
             <span className="font-semibold text-on-surface flex items-center gap-1">
               <span className="material-symbols-outlined text-error text-[15px]">trending_up</span> Xu hướng:
             </span>
-            <a className="px-2.5 py-1 rounded bg-surface-container text-on-surface hover:bg-surface-variant hover:text-primary transition-colors font-tag-chip text-tag-chip font-medium" href="#">#ReactJS</a>
-            <a className="px-2.5 py-1 rounded bg-surface-container text-on-surface hover:bg-surface-variant hover:text-primary transition-colors font-tag-chip text-tag-chip font-medium" href="#">#Java Spring</a>
-            <a className="px-2.5 py-1 rounded bg-surface-container text-on-surface hover:bg-surface-variant hover:text-primary transition-colors font-tag-chip text-tag-chip font-medium" href="#">#Data Analyst</a>
+            <Link className="px-2.5 py-1 rounded bg-surface-container text-on-surface hover:bg-surface-variant hover:text-primary transition-colors font-tag-chip text-tag-chip font-medium" to="/jobs?keyword=ReactJS">#ReactJS</Link>
+            <Link className="px-2.5 py-1 rounded bg-surface-container text-on-surface hover:bg-surface-variant hover:text-primary transition-colors font-tag-chip text-tag-chip font-medium" to="/jobs?keyword=Java%20Spring">#Java Spring</Link>
+            <Link className="px-2.5 py-1 rounded bg-surface-container text-on-surface hover:bg-surface-variant hover:text-primary transition-colors font-tag-chip text-tag-chip font-medium" to="/jobs?keyword=Data%20Analyst">#Data Analyst</Link>
           </div>
         </div>
 

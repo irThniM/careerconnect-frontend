@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import ProfileInfoTab from '../../components/employer/profile/ProfileInfoTab';
 import VerificationTab from '../../components/employer/profile/VerificationTab';
+import { isAuthenticatedAs } from '../../utils/auth';
 
 const CompanyProfile: React.FC = () => {
   const [activeTab, setActiveTab] = useState('verification'); 
+
+  if (!isAuthenticatedAs('Employer')) {
+    return <Navigate to="/employer/login" replace />;
+  }
 
   return (
     <div className="bg-slate-50 min-h-screen p-8 text-slate-800 font-sans">

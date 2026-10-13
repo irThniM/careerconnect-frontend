@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { apiFetch } from '../../api/client';
 
 interface UserData {
     id: string;
@@ -18,7 +19,7 @@ export default function AdminUsersPage() {
         const fetchUsers = async () => {
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await fetch('https://localhost:7203/api/Admin/users', {
+                const response = await apiFetch('Admin/users', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

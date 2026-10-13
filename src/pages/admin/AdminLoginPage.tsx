@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../api/client';
 import AdminLoginForm from '../../components/admin/login/AdminLoginForm';
+import LoadingOverlay from '../../components/common/LoadingOverlay';
+import { saveAuthSession } from '../../utils/auth';
 
 export default function AdminLoginPage() {
     const navigate = useNavigate();
@@ -16,7 +19,7 @@ export default function AdminLoginPage() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('https://localhost:7203/api/Auth/login', {
+            const response = await apiFetch('Auth/login/admin', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
@@ -28,25 +31,12 @@ export default function AdminLoginPage() {
                 throw new Error(data.message || 'Sai tài khoản hoặc mật khẩu.');
             }
 
-            const token = data.token || data.accessToken;
-            
-            if (token) {
-                localStorage.setItem('accessToken', token);
-                localStorage.setItem('isAdmin', 'true'); 
-                
-                // Lưu thông tin cá nhân vào Local Storage để Sidebar đọc
-                localStorage.setItem('user', JSON.stringify({
-                    fullName: data.fullName,
-                    email: data.email,
-                    accountType: data.accountType
-                }));
-                
-                setTimeout(() => {
-                    navigate('/admin/dashboard');
-                }, 500);
-            } else {
-                throw new Error('Không nhận được token từ server');
+            if (String(data.accountType).toLowerCase() !== 'admin') {
+                throw new Error('Tài khoản này không thuộc Cổng Quản trị.');
             }
+
+            saveAuthSession(data);
+            setTimeout(() => navigate('/admin/dashboard'), 500);
         } catch (err: any) {
             setErrorMsg(err.message === 'Failed to fetch' ? 'Không thể kết nối máy chủ Backend.' : err.message);
             setIsLoading(false); 
@@ -68,6 +58,11 @@ export default function AdminLoginPage() {
                     isLoading={isLoading} errorMsg={errorMsg}
                 />
             </div>
+            <LoadingOverlay
+                isOpen={isLoading}
+                title="Đang đăng nhập quản trị viên"
+                description="Hệ thống đang xác thực tài khoản quản trị."
+            />
         </div>
     );
 }

@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function CandidateRegisterPerks() {
   return (
     <div className="lg:col-span-5 flex flex-col gap-4">

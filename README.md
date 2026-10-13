@@ -1,32 +1,31 @@
-# React + TypeScript + Vite
+# CareerConnect Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React and TypeScript client built with Vite. The frontend communicates with the ASP.NET Core API.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The API base URL defaults to `https://localhost:7203/api`. To override it, create a local `.env.local` file:
+
+```env
+VITE_API_BASE_URL=https://localhost:7203/api
+```
+
+## Checks
+
+```bash
+npm run lint
+npm run build
+```
+
+## Source layout
+
+- `src/api`: API clients and response types.
+- `src/components`: reusable UI grouped by feature and user role.
+- `src/layouts`: page shells for candidates, employers, and administrators.
+- `src/pages`: route-level screens.
+- `src/utils`: shared helpers and form schemas.

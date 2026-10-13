@@ -7,9 +7,9 @@ const EmployerLayout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <EmployerHeader />
-      <main className="flex-1 w-full pt-16 flex flex-col">
+      <div className="flex-1 w-full pt-16 flex flex-col">
         <Outlet />
-      </main>
+      </div>
       <EmployerFooter />
     </div>
   );

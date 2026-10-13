@@ -10,30 +10,60 @@ export const isAuthenticated = (): boolean => {
   return !!getAccessToken();
 };
 
-// Đăng xuất: Xóa sạch dữ liệu trong máy
-export const logout = () => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
-  localStorage.removeItem('userEmail');
-  localStorage.removeItem('accountType');
-  localStorage.removeItem('userId');
-  window.location.href = '/login';
+export type AccountType = 'Candidate' | 'Employer' | 'Admin';
+
+export const getAccountType = (): string | null => {
+  const storedType = localStorage.getItem('accountType');
+  if (storedType) return storedType;
+
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    return typeof user?.accountType === 'string' ? user.accountType : null;
+  } catch {
+    return null;
+  }
 };
 
-// Hàm hỗ trợ gọi API tự động đính kèm Token bảo mật
-export const authFetch = async (url: string, options: RequestInit = {}) => {
-  const token = getAccessToken();
-  
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
+export const isAuthenticatedAs = (accountType: AccountType): boolean => {
+  return isAuthenticated() && getAccountType()?.toLowerCase() === accountType.toLowerCase();
+};
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+export interface AuthSessionResponse {
+  accessToken?: string;
+  token?: string;
+  refreshToken?: string;
+  userId?: number | string;
+  email?: string;
+  fullName?: string;
+  accountType?: string;
+}
 
-  return response;
+export const saveAuthSession = (data: AuthSessionResponse): void => {
+  const accessToken = data.accessToken || data.token;
+  if (!accessToken) throw new Error('Không nhận được token từ máy chủ.');
+  if (!data.accountType) throw new Error('Máy chủ không trả về loại tài khoản.');
+
+  clearAuthSession();
+  localStorage.setItem('accessToken', accessToken);
+  if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+  localStorage.setItem('accountType', data.accountType);
+  if (data.userId !== undefined) localStorage.setItem('userId', String(data.userId));
+  if (data.email) localStorage.setItem('userEmail', data.email);
+
+  const fullName = data.fullName || data.email?.split('@')[0] || 'Người dùng';
+  localStorage.setItem('fullName', fullName);
+  localStorage.setItem('user', JSON.stringify({
+    fullName,
+    email: data.email,
+    accountType: data.accountType,
+  }));
+
+  if (data.accountType.toLowerCase() === 'admin') {
+    localStorage.setItem('isAdmin', 'true');
+  }
+};
+
+export const clearAuthSession = () => {
+  ['accessToken', 'refreshToken', 'userEmail', 'accountType', 'userId', 'fullName', 'user', 'isAdmin']
+    .forEach((key) => localStorage.removeItem(key));
 };

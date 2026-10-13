@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { apiFetch } from '../../api/client';
 import LoginHeader from '../../components/employer/login/LoginHeader';
 import LoginForm from '../../components/employer/login/LoginForm';
+import LoadingOverlay from '../../components/common/LoadingOverlay';
+import { saveAuthSession } from '../../utils/auth';
 
 const EmployerLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +25,7 @@ const EmployerLogin: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://localhost:7203/api/Auth/login', {
+      const response = await apiFetch('Auth/login/employer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -34,9 +37,11 @@ const EmployerLogin: React.FC = () => {
         throw new Error(data.message || 'Tài khoản hoặc mật khẩu không chính xác.');
       }
 
-      if (data.token || data.accessToken) {
-        localStorage.setItem('accessToken', data.token || data.accessToken);
+      if (String(data.accountType).toLowerCase() !== 'employer') {
+        throw new Error('Tài khoản này không thuộc Cổng Nhà tuyển dụng. Vui lòng chọn đúng cổng đăng nhập.');
       }
+
+      saveAuthSession(data);
 
       navigate('/employer/dashboard');
 
@@ -86,6 +91,11 @@ const EmployerLogin: React.FC = () => {
           </div>
         </div>
       </footer>
+      <LoadingOverlay
+        isOpen={isLoading}
+        title="Đang đăng nhập nhà tuyển dụng"
+        description="CareerConnect đang xác thực thông tin tài khoản của em."
+      />
     </div>
   );
 };

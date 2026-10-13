@@ -1,40 +1,57 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 
 // Layouts
 import CandidateLayout from './layouts/CandidateLayout';
-import EmployerLayout from './layouts/EmployerLayout'; 
+import EmployerLayout from './layouts/EmployerLayout';
 import EmployerDashboardLayout from './layouts/EmployerDashboardLayout';
-import AdminLayout from './layouts/AdminLayout'; 
+import AdminLayout from './layouts/AdminLayout';
 
-// Pages Ứng viên (Candidate)
-import CandidateHome from './pages/candidate/Home'; 
-import CandidateLogin from './pages/candidate/CandidateLogin'; 
-import CandidateRegister from './pages/candidate/CandidateRegister'; 
-import EmailVerification from './pages/candidate/EmailVerification';
-
-// Pages Nhà Tuyển Dụng (Employer)
-import EmployerHome from './pages/employer/Home'; 
-import EmployerDashboard from './pages/employer/Dashboard'; 
-import EmployerLogin from './pages/employer/EmployerLogin'; 
-import EmployerRegister from './pages/employer/EmployerRegister'; 
-import CompanyProfile from './pages/employer/CompanyProfile';
-
-// Pages Quản Trị (Admin)
-import AdminLoginPage from './pages/admin/AdminLoginPage'; 
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminUsersPage from './pages/admin/AdminUsersPage';
-import AdminCompaniesPage from './pages/admin/AdminCompaniesPage';
+// Load each page only when its route is visited to keep the initial bundle small.
+const CandidateHome = lazy(() => import('./pages/candidate/Home'));
+const CandidateLogin = lazy(() => import('./pages/candidate/CandidateLogin'));
+const CandidateRegister = lazy(() => import('./pages/candidate/CandidateRegister'));
+const EmailVerification = lazy(() => import('./pages/candidate/EmailVerification'));
+const CandidateJobs = lazy(() => import('./pages/candidate/Jobs'));
+const CandidateJobDetail = lazy(() => import('./pages/candidate/JobDetail'));
+const EmployerHome = lazy(() => import('./pages/employer/Home'));
+const EmployerDashboard = lazy(() => import('./pages/employer/Dashboard'));
+const EmployerLogin = lazy(() => import('./pages/employer/EmployerLogin'));
+const EmployerRegister = lazy(() => import('./pages/employer/EmployerRegister'));
+const CompanyProfile = lazy(() => import('./pages/employer/CompanyProfile'));
+const CreateJobPage = lazy(() => import('./pages/employer/CreateJobPage'));
+const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
+const AdminCompaniesPage = lazy(() => import('./pages/admin/AdminCompaniesPage'));
 
 function App() {
   return (
     <BrowserRouter>
+
+      <Toaster
+              position="top-right"
+              toastOptions={{
+                success: {
+                  style: { background: '#ECFDF5', color: '#047857', border: '1px solid #34D399' },
+                  iconTheme: { primary: '#059669', secondary: '#ECFDF5' },
+                },
+                error: {
+                  style: { background: '#ffdad6', color: '#93000a', border: '1px solid #ba1a1a' },
+                  iconTheme: { primary: '#ba1a1a', secondary: '#ffdad6' },
+                },
+              }}
+            />
+
+      <Suspense fallback={<div className="px-6 py-12 text-center text-on-surface-variant">Đang tải trang...</div>}>
       <Routes>
         {/* --- LUỒNG QUẢN TRỊ (ADMIN) --- */}
         <Route path="/admin-secure-login" element={<AdminLoginPage />} />
-        
+
         {/* Đã xóa cụm Route dư thừa, chỉ giữ lại một nhóm Route bảo vệ bởi AdminLayout */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route path="dashboard" element={<AdminDashboard />} /> 
+          <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="companies" element={<AdminCompaniesPage />} />
         </Route>
@@ -46,22 +63,25 @@ function App() {
 
         <Route path="/" element={<CandidateLayout />}>
           <Route index element={<CandidateHome />} />
+          <Route path="jobs" element={<CandidateJobs />} />
+          <Route path="jobs/:jobId" element={<CandidateJobDetail />} />
         </Route>
 
         {/* --- LUỒNG NHÀ TUYỂN DỤNG (EMPLOYER) --- */}
         <Route path="/employer/login" element={<EmployerLogin />} />
         <Route path="/employer/register" element={<EmployerRegister />} />
-
         <Route path="/employer" element={<EmployerLayout />}>
-          <Route index element={<EmployerHome />} /> 
+          <Route index element={<EmployerHome />} />
+          <Route path="jobs/create" element={<CreateJobPage />} />
         </Route>
-
         <Route path="/employer/dashboard" element={<EmployerDashboardLayout />}>
           <Route index element={<EmployerDashboard />} />
         </Route>
-
         <Route path="/employer/profile" element={<CompanyProfile />} />
       </Routes>
+      </Suspense>
+
+
     </BrowserRouter>
   );
 }

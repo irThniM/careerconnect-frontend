@@ -5,10 +5,12 @@ interface Props {
   isVerified: boolean;
   companyName: string;
   userEmail: string;
+  jobPostCreditsRemaining: number;
 }
 
-const DashboardMainContent: React.FC<Props> = ({ isVerified, companyName, userEmail }) => {
+const DashboardMainContent: React.FC<Props> = ({ isVerified, companyName, jobPostCreditsRemaining }) => {
   const navigate = useNavigate();
+  const canPost = isVerified && jobPostCreditsRemaining > 0;
 
   return (
     <>
@@ -51,18 +53,18 @@ const DashboardMainContent: React.FC<Props> = ({ isVerified, companyName, userEm
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
               <div>
                 <h2 className="text-lg text-slate-900 font-bold">Tin Tuyển Dụng Đang Chạy</h2>
-                <p className="text-sm text-slate-500">Quản lý hiệu suất các vị trí đang mở</p>
+                <p className="text-sm text-slate-500">Còn {jobPostCreditsRemaining} lượt đăng tin cho công ty</p>
               </div>
             </div>
             <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
               <span className="material-symbols-outlined text-[48px] text-slate-300 mb-3">post_add</span>
               <p className="text-slate-500 font-medium text-sm">Chưa có tin tuyển dụng nào.</p>
               <button 
-                disabled={!isVerified} 
+                disabled={!canPost}
                 onClick={() => navigate('/employer/jobs/create')}
                 className="mt-3 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-sm shadow-sm hover:bg-slate-50 disabled:opacity-50"
               >
-                Tạo tin đầu tiên
+                {!isVerified ? 'Xác minh công ty để đăng tin' : canPost ? 'Tạo tin đầu tiên' : 'Đã hết lượt đăng'}
               </button>
             </div>
           </div>

@@ -1,7 +1,12 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Navigate, Outlet, Link } from 'react-router-dom';
+import { isAuthenticatedAs } from '../utils/auth';
 
 const EmployerDashboardLayout: React.FC = () => {
+  if (!isAuthenticatedAs('Employer')) {
+    return <Navigate to="/employer/login" replace />;
+  }
+
   return (
     <div className="bg-background font-body-regular text-body-regular text-on-surface antialiased min-h-screen">
       {/* SIDEBAR BÊN TRÁI */}

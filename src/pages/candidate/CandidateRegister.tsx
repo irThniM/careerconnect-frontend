@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../api/client';
 
 // Import đúng cây thư mục candidate
 import CandidateHeader from '../../components/candidate/common/CandidateHeader';
 import CandidateFooter from '../../components/candidate/common/CandidateFooter';
 import CandidateRegisterForm from '../../components/candidate/register/CandidateRegisterForm';
 import CandidateRegisterPerks from '../../components/candidate/register/CandidateRegisterPerks';
+import LoadingOverlay from '../../components/common/LoadingOverlay';
 
 export default function CandidateRegister() {
   const navigate = useNavigate();
@@ -39,7 +41,7 @@ export default function CandidateRegister() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://localhost:7203/api/Auth/register/candidate', {
+      const response = await apiFetch('Auth/register/candidate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -109,6 +111,11 @@ export default function CandidateRegister() {
       </main>
 
       <CandidateFooter />
+      <LoadingOverlay
+        isOpen={isLoading}
+        title="Đang tạo tài khoản ứng viên"
+        description="Thông tin đăng ký đang được gửi và xử lý."
+      />
     </div>
   );
 }

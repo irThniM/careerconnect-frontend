@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function CandidateLoginBanner() {
   return (
     <div className="lg:col-span-5 flex flex-col gap-space-lg">

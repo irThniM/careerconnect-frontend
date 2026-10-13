@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { apiFetch } from '../../api/client';
 
 // Import từ folder register mới tạo
 import RegisterStep1 from '../../components/employer/register/RegisterStep1';
 import RegisterStep2 from '../../components/employer/register/RegisterStep2';
 import RegisterStep3 from '../../components/employer/register/RegisterStep3';
+import LoadingOverlay from '../../components/common/LoadingOverlay';
 
 const EmployerRegister: React.FC = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingAction, setLoadingAction] = useState<'register' | 'resend' | 'verify' | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   
   const [isLookingUp, setIsLookingUp] = useState(false);
@@ -39,7 +42,7 @@ const EmployerRegister: React.FC = () => {
     }
     setIsLookingUp(true); setTaxError(''); setTaxSuccess('');
     try {
-      const res = await fetch(`https://localhost:7203/api/Company/lookup-tax/${formData.taxCode}`);
+      const res = await apiFetch(`Company/lookup-tax/${encodeURIComponent(formData.taxCode)}`);
       const result = await res.json(); 
       if (res.ok && result.code === '00' && result.data) {
         let detectedCity = formData.city; 
@@ -61,7 +64,7 @@ const EmployerRegister: React.FC = () => {
         setFormData(prev => ({ ...prev, taxStatus: 'UNVERIFIED' }));
         setTaxError(result.message || 'Mã số thuế không tồn tại.');
       }
-    } catch (error) {
+    } catch {
       setTaxError('Lỗi mạng. Vui lòng đảm bảo Backend đang chạy!');
     } finally {
       setIsLookingUp(false);
@@ -73,9 +76,10 @@ const EmployerRegister: React.FC = () => {
     if (formData.password !== formData.confirmPassword) {
       setErrorMsg('Mật khẩu nhập lại không khớp!'); return;
     }
+    setLoadingAction(step === 1 ? 'register' : 'resend');
     setIsLoading(true);
     try {
-      const response = await fetch('https://localhost:7203/api/Auth/register/employer', {
+      const response = await apiFetch('Auth/register/employer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -87,13 +91,16 @@ const EmployerRegister: React.FC = () => {
       setErrorMsg(error.message === 'Failed to fetch' ? 'Lỗi kết nối máy chủ.' : error.message);
     } finally {
       setIsLoading(false);
+      setLoadingAction(null);
     }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); setErrorMsg(''); setIsLoading(true);
+    e.preventDefault(); setErrorMsg('');
+    setLoadingAction('verify');
+    setIsLoading(true);
     try {
-      const response = await fetch('https://localhost:7203/api/Auth/verify-otp/employer', {
+      const response = await apiFetch('Auth/verify-otp/employer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: formData.email, otp: otpCode }),
@@ -105,6 +112,7 @@ const EmployerRegister: React.FC = () => {
       setErrorMsg(error.message === 'Failed to fetch' ? 'Lỗi kết nối máy chủ.' : error.message);
     } finally {
       setIsLoading(false);
+      setLoadingAction(null);
     }
   };
 
@@ -147,6 +155,17 @@ const EmployerRegister: React.FC = () => {
       <footer className="w-full bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
         © 2026 CareerConnect Corporation. All rights reserved.
       </footer>
+      <LoadingOverlay
+        isOpen={isLoading}
+        title={loadingAction === 'verify'
+          ? 'Đang xác thực mã OTP'
+          : loadingAction === 'resend'
+            ? 'Đang gửi lại mã OTP'
+            : 'Đang tạo tài khoản doanh nghiệp'}
+        description={loadingAction === 'verify'
+          ? 'Hệ thống đang kiểm tra mã xác thực và hoàn tất đăng ký.'
+          : 'Thông tin đang được xử lý. Em vui lòng chờ và không tải lại trang.'}
+      />
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../../api/client';
 
 const ProfileInfoTab: React.FC = () => {
   // Setup state để lưu thông tin động từ Backend
@@ -10,7 +11,7 @@ const ProfileInfoTab: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await fetch('https://localhost:7203/api/Company/my-profile', {
+        const response = await apiFetch('Company/my-profile', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
           }

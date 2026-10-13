@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiFetch } from '../../api/client';
 
 // Import đúng cây thư mục candidate
 import CandidateHeader from '../../components/candidate/common/CandidateHeader';
 import CandidateFooter from '../../components/candidate/common/CandidateFooter';
 import CandidateLoginForm from '../../components/candidate/login/CandidateLoginForm';
 import CandidateLoginBanner from '../../components/candidate/login/CandidateLoginBanner';
+import LoadingOverlay from '../../components/common/LoadingOverlay';
+import { saveAuthSession } from '../../utils/auth';
 
 export default function CandidateLogin() {
   const navigate = useNavigate();
@@ -22,7 +25,7 @@ export default function CandidateLogin() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://localhost:7203/api/Auth/login', {
+      const response = await apiFetch('Auth/login/candidate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ Email: email, Password: password })
@@ -34,12 +37,11 @@ export default function CandidateLogin() {
         throw new Error(data.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
       }
 
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-      localStorage.setItem('userEmail', data.email);
-      localStorage.setItem('fullName', data.fullName || data.email.split('@')[0]);
-      localStorage.setItem('accountType', data.accountType);
-      localStorage.setItem('userId', data.userId);
+      if (String(data.accountType).toLowerCase() !== 'candidate') {
+        throw new Error('Tài khoản này không thuộc Cổng Ứng viên. Vui lòng chọn đúng cổng đăng nhập.');
+      }
+
+      saveAuthSession(data);
 
       navigate('/', { state: { loginSuccess: true, fullName: data.fullName || data.email } });
 
@@ -74,6 +76,11 @@ export default function CandidateLogin() {
       </main>
 
       <CandidateFooter />
+      <LoadingOverlay
+        isOpen={isLoading}
+        title="Đang đăng nhập"
+        description="CareerConnect đang xác thực thông tin tài khoản của em."
+      />
     </div>
   );
 }

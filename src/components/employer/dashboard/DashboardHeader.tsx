@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface Props {
   isVerified: boolean;
+  canPost: boolean;
 }
 
-const DashboardHeader: React.FC<Props> = ({ isVerified }) => {
+const DashboardHeader: React.FC<Props> = ({ isVerified, canPost }) => {
   const navigate = useNavigate();
 
   return (
@@ -18,11 +19,12 @@ const DashboardHeader: React.FC<Props> = ({ isVerified }) => {
       </div>
       <div className="flex items-center gap-6">
         <button 
-          disabled={!isVerified}
+          disabled={!canPost}
           onClick={() => navigate('/employer/jobs/create')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-colors ${isVerified ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-colors ${canPost ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
         >
-          <span className="material-symbols-outlined text-[18px]">{isVerified ? 'add' : 'lock'}</span> Đăng tin mới
+          <span className="material-symbols-outlined text-[18px]">{canPost ? 'add' : 'lock'}</span>
+          {canPost ? 'Đăng tin mới' : isVerified ? 'Hết lượt đăng' : 'Cần xác minh'}
         </button>
         <div className="h-6 w-px bg-slate-200"></div>
         <div className="flex items-center gap-3">

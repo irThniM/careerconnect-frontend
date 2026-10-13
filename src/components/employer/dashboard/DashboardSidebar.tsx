@@ -5,9 +5,10 @@ interface Props {
   companyName: string;
   userEmail: string;
   isVerified: boolean;
+  jobPostCreditsRemaining: number;
 }
 
-const DashboardSidebar: React.FC<Props> = ({ companyName, userEmail, isVerified }) => {
+const DashboardSidebar: React.FC<Props> = ({ companyName, userEmail, isVerified, jobPostCreditsRemaining }) => {
   const navigate = useNavigate();
 
   return (
@@ -65,8 +66,8 @@ const DashboardSidebar: React.FC<Props> = ({ companyName, userEmail, isVerified 
             <span className="material-symbols-outlined text-[18px]">workspace_premium</span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[12px] text-emerald-700 font-bold">Gói Doanh Nghiệp</span>
-            <span className="text-[10px] text-emerald-600">Đã xác minh ĐKKD</span>
+            <span className="text-[12px] text-emerald-700 font-bold">Lượt đăng tin</span>
+            <span className="text-[10px] text-emerald-600">Còn {jobPostCreditsRemaining} lượt</span>
           </div>
         </div>
       )}

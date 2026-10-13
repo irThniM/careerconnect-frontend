@@ -1,12 +1,11 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import AdminSidebar from '../components/admin/dashboard/AdminSidebar';
+import { isAuthenticatedAs } from '../utils/auth';
 
 export default function AdminLayout() {
-    const token = localStorage.getItem('accessToken');
     const isAdmin = localStorage.getItem('isAdmin');
 
-    // Chốt chặn: Nếu không có Token hoặc không có cờ Admin thì đá ra ngoài
-    if (!token || !isAdmin) {
+    if (!isAuthenticatedAs('Admin') || isAdmin !== 'true') {
         return <Navigate to="/admin-secure-login" replace />;
     }
 

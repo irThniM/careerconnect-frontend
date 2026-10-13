@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { apiFetch } from '../../../api/client';
+import LoadingOverlay from '../../common/LoadingOverlay';
 
 const VerificationTab: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -14,8 +16,7 @@ const VerificationTab: React.FC = () => {
   useEffect(() => {
     const fetchCompanyProfile = async () => {
       try {
-        // LƯU Ý: Bác thay đường dẫn này bằng API Get Profile thực tế của Backend nhé
-        const response = await fetch('https://localhost:7203/api/Company/my-profile', {
+        const response = await apiFetch('Company/my-profile', {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
           }
@@ -65,7 +66,7 @@ const VerificationTab: React.FC = () => {
     formData.append('document', selectedFile);
 
     try {
-      const response = await fetch('https://localhost:7203/api/Company/verify-kyb', {
+      const response = await apiFetch('Company/verify-kyb', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
@@ -73,10 +74,10 @@ const VerificationTab: React.FC = () => {
         body: formData,
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null) as { message?: string } | null;
 
       if (response.ok) {
-        setFeedback({ type: 'success', text: data.message });
+        setFeedback({ type: 'success', text: data?.message ?? 'Xác minh giấy tờ thành công.' });
         setSelectedFile(null);
         
         // Tải lại trang sau 2s để effect tự cập nhật lại giao diện xem PDF
@@ -84,9 +85,13 @@ const VerificationTab: React.FC = () => {
           window.location.reload();
         }, 2000);
       } else {
-        setFeedback({ type: 'error', text: data.message || 'Xác minh thất bại.' });
+        setFeedback({
+          type: 'error',
+          text: data?.message || `Backend trả lỗi ${response.status} khi xác minh giấy tờ.`,
+        });
       }
     } catch (error) {
+      console.error('Không nhận được phản hồi từ API xác minh KYB:', error);
       setFeedback({ type: 'error', text: 'Không thể kết nối đến máy chủ Backend.' });
     } finally {
       setIsLoading(false);
@@ -95,11 +100,7 @@ const VerificationTab: React.FC = () => {
 
   // MÀN HÌNH LOADING TRONG LÚC GỌI API
   if (isFetching) {
-    return (
-      <div className="flex justify-center items-center h-64 max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-slate-100">
-        <span className="material-symbols-outlined animate-spin text-emerald-600 text-4xl">sync</span>
-      </div>
-    );
+    return <LoadingOverlay isOpen={true} title="Đang tải hồ sơ xác minh" description="Hệ thống đang kiểm tra trạng thái doanh nghiệp." />;
   }
 
   // MÀN HÌNH ĐÃ XÁC MINH (HIỂN THỊ PDF)
@@ -138,7 +139,7 @@ const VerificationTab: React.FC = () => {
         <div>
           <h2 className="text-xl font-bold text-slate-900 mb-2">Xác minh Giấy phép hoạt động (KYB)</h2>
           <p className="text-sm text-slate-600 mb-4">
-            Tài khoản của bạn đang ở trạng thái <strong className="text-orange-600">CHỜ DUYỆT</strong>. Tải lên file PDF Giấy chứng nhận ĐKKD để hệ thống tự động bóc tách mã số thuế và đối soát.
+            Công ty của bạn đang ở trạng thái <strong className="text-orange-600">CHƯA XÁC MINH</strong>. Tải lên PDF Giấy chứng nhận đăng ký doanh nghiệp để hệ thống đọc MST và đối chiếu với dữ liệu thuế. Nếu MST đã nhập lúc đăng ký, hai mã phải khớp; nếu chưa nhập, hệ thống sẽ lấy MST từ giấy tờ sau khi xác minh thành công.
           </p>
           
           <div className="bg-sky-50 border border-sky-200 rounded-lg p-4 flex gap-3 text-sm text-sky-800">
@@ -221,12 +222,17 @@ const VerificationTab: React.FC = () => {
             ) : (
               <>
                 <span className="material-symbols-outlined">verified</span>
-                Gửi hệ thống xét duyệt
+                Xác minh giấy tờ
               </>
             )}
           </button>
         </form>
       </div>
+      <LoadingOverlay
+        isOpen={isLoading}
+        title="Đang xác minh giấy phép"
+        description="Hệ thống đang đọc PDF, đối chiếu mã số thuế và cập nhật hồ sơ doanh nghiệp."
+      />
     </div>
   );
 };

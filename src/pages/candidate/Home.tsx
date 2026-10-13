@@ -4,26 +4,16 @@ import HeroSection from '../../components/home/HeroSection/HeroSection';
 
 const Home: React.FC = () => {
   const location = useLocation();
-  const [showToast, setShowToast] = useState(false);
-  const [fullName, setFullName] = useState<string | null>(null);
+  const successKey = location.state?.loginSuccess ? location.key : null;
+  const [dismissedToastKey, setDismissedToastKey] = useState<string | null>(null);
+  const showToast = successKey !== null && dismissedToastKey !== successKey;
+  const fullName = localStorage.getItem('fullName');
 
   useEffect(() => {
-    // Hiển thị toast thông báo đăng nhập thành công tự biến mất sau 4 giây
-    if (location.state?.loginSuccess) {
-      setShowToast(true);
-      const timer = setTimeout(() => {
-        setShowToast(false);
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [location.state]);
-
-  useEffect(() => {
-    const storedName = localStorage.getItem('fullName');
-    if (storedName) {
-      setFullName(storedName);
-    }
-  }, []);
+    if (!successKey) return;
+    const timer = setTimeout(() => setDismissedToastKey(successKey), 4000);
+    return () => clearTimeout(timer);
+  }, [successKey]);
 
   return (
     <div className="flex flex-col w-full relative">
