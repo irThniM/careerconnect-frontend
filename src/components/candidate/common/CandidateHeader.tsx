@@ -1,14 +1,27 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearAuthSession, isAuthenticated } from '../../../utils/auth';
 
 const CandidateHeader: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSignedIn, setIsSignedIn] = useState(isAuthenticated);
+  const [displayName, setDisplayName] = useState(() => localStorage.getItem('fullName') || '');
+
+  useEffect(() => {
+    const refreshSessionDisplay = () => {
+      setIsSignedIn(isAuthenticated());
+      setDisplayName(localStorage.getItem('fullName') || '');
+    };
+
+    window.addEventListener('auth-session-updated', refreshSessionDisplay);
+    return () => window.removeEventListener('auth-session-updated', refreshSessionDisplay);
+  }, []);
 
   const handleLogout = () => {
     clearAuthSession();
     setIsSignedIn(false);
+    setDisplayName('');
     navigate('/login');
   };
 
@@ -17,8 +30,8 @@ const CandidateHeader: React.FC = () => {
       <div className="bg-surface-container-high/60 py-space-2xs px-gutter-mobile lg:px-gutter-desktop">
         <div className="max-w-layout-container-max mx-auto flex items-center justify-between font-metadata-label text-metadata-label text-on-surface-variant">
           <div className="flex items-center gap-space-xs">
-            <span className="text-error font-bold animate-pulse">🔥</span>
-            <span>Hơn <strong className="text-primary font-semibold">25,000+</strong> việc làm IT, Kinh doanh, Marketing chất lượng cao cập nhật hôm nay</span>
+            <span className="material-symbols-outlined text-[16px] text-primary">work</span>
+            <span>Khám phá cơ hội nghề nghiệp và kết nối với nhà tuyển dụng trên CareerConnect</span>
           </div>
           <div className="hidden md:flex items-center gap-space-lg">
             <span>Hotline: <strong className="text-on-surface font-semibold">1900 6868</strong></span>
@@ -30,21 +43,17 @@ const CandidateHeader: React.FC = () => {
       
       <div className="h-16 max-w-layout-container-max mx-auto px-gutter-mobile lg:px-gutter-desktop flex items-center justify-between gap-space-md">
         <div className="flex items-center gap-space-md">
-          <Link to="/" className="flex items-center gap-space-xs">
-            <img alt="CareerConnect Logo" className="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XksUj0_TC61Xo5odGfG6PYqHCVdsRAIHc3evsOyUAjItmHDCoW1txkHev35HfxzbiBWyBX6gQqmzgf28ABKVb_p0v4uX45Dm67NAsmwZstlh-32DLjORABo403bNNo-7SAAX9X6bO7VkgDCgbUL1KzeIAR6bxit39xyIDhOTQnRkCUXtidHBH48_r6hTcGsFHWlgZTJwtu_HxEh7A83tcO9e2uGOHptHFcV9SJfiWq8loBBhBA3iBk4lg" />
+          <Link to="/" className="flex shrink-0 items-center gap-space-xs">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-black text-on-primary shadow-sm">C</span>
             <div className="flex flex-col">
               <span className="font-headline-md text-headline-md font-bold tracking-tight text-primary leading-none">CareerConnect</span>
-              <span className="font-tag-chip text-tag-chip font-medium text-tertiary uppercase tracking-wider">AI Smart Recruitment</span>
+              <span className="font-tag-chip text-tag-chip font-medium text-on-surface-variant uppercase tracking-wider">Cổng việc làm &amp; kết nối nghề nghiệp</span>
             </div>
           </Link>
           
-          <nav className="hidden xl:flex items-center gap-space-md ml-space-md">
-            <Link to="/jobs" className="font-body-regular text-body-regular text-on-surface-variant hover:text-on-surface transition-colors py-space-xs">Việc làm</Link>
-            <Link to="/companies" className="font-body-regular text-body-regular text-on-surface-variant hover:text-on-surface transition-colors py-space-xs">Khám phá công ty</Link>
-            <Link to="/ai-match" className="font-body-regular text-body-regular text-on-surface-variant hover:text-on-surface transition-colors py-space-xs flex items-center gap-space-2xs">
-              <span>AI Match CV</span>
-              <span className="font-tag-chip text-tag-chip bg-tertiary-fixed text-on-tertiary-fixed px-space-2xs py-0.5 rounded-full font-bold">PRO</span>
-            </Link>
+          <nav className="hidden lg:flex items-center gap-1 ml-space-md">
+            <Link to="/jobs" className={`rounded-lg px-3 py-2 text-sm transition-colors ${location.pathname.startsWith('/jobs') ? 'bg-primary-fixed font-bold text-on-primary-fixed' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}>Việc làm</Link>
+            <Link to={isSignedIn ? '/profile' : '/login'} className={`rounded-lg px-3 py-2 text-sm transition-colors ${location.pathname === '/profile' ? 'bg-primary-fixed font-bold text-on-primary-fixed' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}>Hồ sơ ứng viên</Link>
           </nav>
         </div>
         
@@ -59,14 +68,14 @@ const CandidateHeader: React.FC = () => {
           {/* --- KHU VỰC THAY ĐỔI: TỰ ĐỘNG ĐỔI TRẠNG THÁI KHI ĐÃ ĐĂNG NHẬP --- */}
           {isSignedIn ? (
             <div className="flex items-center gap-3 pl-2 border-l border-outline-variant">
-              <div className="flex items-center gap-2">
+              <Link to="/profile" className="flex items-center gap-2 rounded-full hover:opacity-80" aria-label="Mở hồ sơ ứng viên" title="Hồ sơ của tôi">
                 <div className="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-sm shadow-sm">
-                  {(localStorage.getItem('fullName') || 'U').charAt(0).toUpperCase()}
+                  {(displayName || 'U').charAt(0).toUpperCase()}
                 </div>
                 <span className="hidden md:inline font-semibold text-on-surface text-sm">
-                  {localStorage.getItem('fullName')}
+                  {displayName}
                 </span>
-              </div>
+              </Link>
               <button 
                 onClick={handleLogout}
                 className="px-3 py-1.5 rounded-xl bg-surface-container hover:bg-error-container hover:text-on-error-container text-on-surface-variant transition-colors text-xs font-semibold flex items-center gap-1"

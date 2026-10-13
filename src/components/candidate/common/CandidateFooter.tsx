@@ -9,10 +9,10 @@ const CandidateFooter: React.FC = () => {
           
           <div className="lg:col-span-2 flex flex-col gap-space-md">
             <div className="flex items-center gap-space-xs">
-              <img alt="CareerConnect Logo" className="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XksUj0_TC61Xo5odGfG6PYqHCVdsRAIHc3evsOyUAjItmHDCoW1txkHev35HfxzbiBWyBX6gQqmzgf28ABKVb_p0v4uX45Dm67NAsmwZstlh-32DLjORABo403bNNo-7SAAX9X6bO7VkgDCgbUL1KzeIAR6bxit39xyIDhOTQnRkCUXtidHBH48_r6hTcGsFHWlgZTJwtu_HxEh7A83tcO9e2uGOHptHFcV9SJfiWq8loBBhBA3iBk4lg" />
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-black text-on-primary">C</span>
               <span className="font-headline-md text-headline-md font-bold text-primary">CareerConnect</span>
             </div>
-            <p className="font-body-compact text-body-compact text-on-surface-variant max-w-sm">Nền tảng việc làm và ứng dụng công nghệ AI tiên tiến hàng đầu Việt Nam, giúp kết nối nhân tài với hàng chục ngàn doanh nghiệp uy tín.</p>
+            <p className="font-body-compact text-body-compact text-on-surface-variant max-w-sm">Nền tảng kết nối ứng viên và nhà tuyển dụng, hỗ trợ tìm kiếm cơ hội nghề nghiệp và quản lý thông tin hồ sơ.</p>
             <div className="flex flex-col gap-space-2xs font-metadata-label text-metadata-label text-on-surface-variant">
               <div><strong className="text-on-surface font-semibold">Hotline:</strong> (024) 7300 8888</div>
               <div><strong className="text-on-surface font-semibold">Email:</strong> support@careerconnect.vn</div>
@@ -30,15 +30,15 @@ const CandidateFooter: React.FC = () => {
           <div className="flex flex-col gap-space-sm">
             <div className="font-job-title-card text-job-title-card font-semibold text-on-surface">Dành Cho Ứng Viên</div>
             <div className="flex flex-col gap-space-xs font-body-compact text-body-compact text-on-surface-variant">
-              <Link to="#" className="hover:text-primary transition-colors">Tìm kiếm việc làm</Link>
-              <Link to="#" className="hover:text-primary transition-colors">AI Match CV</Link>
+              <Link to="/jobs" className="hover:text-primary transition-colors">Tìm kiếm việc làm</Link>
+              <Link to="/profile" className="hover:text-primary transition-colors">Hồ sơ ứng viên</Link>
             </div>
           </div>
 
           <div className="flex flex-col gap-space-sm">
             <div className="font-job-title-card text-job-title-card font-semibold text-on-surface">Dành Cho Doanh Nghiệp</div>
             <div className="flex flex-col gap-space-xs font-body-compact text-body-compact text-on-surface-variant">
-              <Link to="#" className="hover:text-primary transition-colors">Đăng tin tuyển dụng</Link>
+              <Link to="/employer" className="hover:text-primary transition-colors">Đăng tin tuyển dụng</Link>
               <Link to="#" className="hover:text-primary transition-colors">Tìm kiếm hồ sơ ứng viên</Link>
             </div>
           </div>

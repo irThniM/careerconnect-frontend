@@ -94,7 +94,7 @@ const EmployerLogin: React.FC = () => {
       <LoadingOverlay
         isOpen={isLoading}
         title="Đang đăng nhập nhà tuyển dụng"
-        description="CareerConnect đang xác thực thông tin tài khoản của em."
+        description="CareerConnect đang xác thực thông tin tài khoản của bạn."
       />
     </div>
   );

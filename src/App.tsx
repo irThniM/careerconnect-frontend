@@ -15,6 +15,7 @@ const CandidateRegister = lazy(() => import('./pages/candidate/CandidateRegister
 const EmailVerification = lazy(() => import('./pages/candidate/EmailVerification'));
 const CandidateJobs = lazy(() => import('./pages/candidate/Jobs'));
 const CandidateJobDetail = lazy(() => import('./pages/candidate/JobDetail'));
+const CandidateProfile = lazy(() => import('./pages/candidate/CandidateProfile'));
 const EmployerHome = lazy(() => import('./pages/employer/Home'));
 const EmployerDashboard = lazy(() => import('./pages/employer/Dashboard'));
 const EmployerLogin = lazy(() => import('./pages/employer/EmployerLogin'));
@@ -65,6 +66,7 @@ function App() {
           <Route index element={<CandidateHome />} />
           <Route path="jobs" element={<CandidateJobs />} />
           <Route path="jobs/:jobId" element={<CandidateJobDetail />} />
+          <Route path="profile" element={<CandidateProfile />} />
         </Route>
 
         {/* --- LUỒNG NHÀ TUYỂN DỤNG (EMPLOYER) --- */}

@@ -63,6 +63,21 @@ export const saveAuthSession = (data: AuthSessionResponse): void => {
   }
 };
 
+export const updateStoredFullName = (fullName: string): void => {
+  localStorage.setItem('fullName', fullName);
+
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (user && typeof user === 'object') {
+      localStorage.setItem('user', JSON.stringify({ ...user, fullName }));
+    }
+  } catch {
+    // Keep the updated display name even if a stale user object cannot be parsed.
+  }
+
+  window.dispatchEvent(new Event('auth-session-updated'));
+};
+
 export const clearAuthSession = () => {
   ['accessToken', 'refreshToken', 'userEmail', 'accountType', 'userId', 'fullName', 'user', 'isAdmin']
     .forEach((key) => localStorage.removeItem(key));

@@ -164,7 +164,7 @@ const EmployerRegister: React.FC = () => {
             : 'Đang tạo tài khoản doanh nghiệp'}
         description={loadingAction === 'verify'
           ? 'Hệ thống đang kiểm tra mã xác thực và hoàn tất đăng ký.'
-          : 'Thông tin đang được xử lý. Em vui lòng chờ và không tải lại trang.'}
+          : 'Thông tin đang được xử lý. Vui lòng chờ và không tải lại trang.'}
       />
     </div>
   );

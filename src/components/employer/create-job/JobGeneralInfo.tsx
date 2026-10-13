@@ -189,12 +189,12 @@ export const JobGeneralInfo = ({
           ) : suggestedCategory ? (
             <p className="font-metadata-label text-metadata-label text-on-surface-variant">
               {selectedCategoryId === suggestedCategory.id
-                ? `Đã tự gợi ý “${suggestedCategory.name}” theo vị trí; em có thể đổi nếu cần.`
-                : `Từ điển nhận diện vị trí này thuộc “${suggestedCategory.name}”. Em có thể chọn danh mục phù hợp hơn.`}
+                ? `Đã tự gợi ý “${suggestedCategory.name}” theo vị trí; bạn có thể đổi nếu cần.`
+                : `Từ điển nhận diện vị trí này thuộc “${suggestedCategory.name}”. Bạn có thể chọn danh mục phù hợp hơn.`}
             </p>
           ) : (
             <p className="font-metadata-label text-metadata-label text-on-surface-variant">
-              Hệ thống dò từ khóa trong vị trí; nếu chưa nhận diện được, em chọn danh mục thủ công.
+              Hệ thống dò từ khóa trong vị trí; nếu chưa nhận diện được, bạn chọn danh mục thủ công.
             </p>
           )}
         </div>

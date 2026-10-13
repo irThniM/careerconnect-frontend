@@ -79,7 +79,7 @@ export default function CandidateLogin() {
       <LoadingOverlay
         isOpen={isLoading}
         title="Đang đăng nhập"
-        description="CareerConnect đang xác thực thông tin tài khoản của em."
+        description="CareerConnect đang xác thực thông tin tài khoản của bạn."
       />
     </div>
   );
