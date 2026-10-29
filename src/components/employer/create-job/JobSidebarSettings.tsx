@@ -16,6 +16,7 @@ interface JobSidebarSettingsProps {
   canPost: boolean;
   isCompanyVerified: boolean;
   remainingJobPostCredits: number;
+  mode?: 'create' | 'edit';
 }
 
 function toLocalDateInputValue(date: Date): string {
@@ -25,7 +26,7 @@ function toLocalDateInputValue(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export const JobSidebarSettings = ({ canPost, isCompanyVerified, remainingJobPostCredits }: JobSidebarSettingsProps) => {
+export const JobSidebarSettings = ({ canPost, isCompanyVerified, remainingJobPostCredits, mode = 'create' }: JobSidebarSettingsProps) => {
   const {
     register,
     watch,
@@ -309,10 +310,12 @@ export const JobSidebarSettings = ({ canPost, isCompanyVerified, remainingJobPos
       <section className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-space-md shadow-sm">
         <div className="mb-3">
           <h2 className="font-job-title-card text-job-title-card font-bold text-on-surface">
-            Sẵn sàng đăng tin?
+            {mode === 'edit' ? 'Lưu thay đổi tin?' : 'Sẵn sàng đăng tin?'}
           </h2>
           <p className="mt-1 font-metadata-label text-metadata-label text-on-surface-variant">
-            {canPost
+            {mode === 'edit'
+              ? 'Nội dung chỉ được cập nhật sau khi lưu.'
+              : canPost
               ? `Công ty còn ${remainingJobPostCredits} lượt đăng tin.`
               : isCompanyVerified
                 ? 'Công ty đã hết lượt đăng tin hiện có.'
@@ -327,12 +330,12 @@ export const JobSidebarSettings = ({ canPost, isCompanyVerified, remainingJobPos
           {isSubmitting ? (
             <>
               <span className="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
-              Đang tạo tin và xử lý AI...
+              {mode === 'edit' ? 'Đang lưu thay đổi…' : 'Đang tạo tin và xử lý AI…'}
             </>
           ) : (
             <>
               <span className="material-symbols-outlined text-[20px]">rocket_launch</span>
-              Đăng tin tuyển dụng
+              {mode === 'edit' ? 'Lưu thay đổi' : 'Đăng tin tuyển dụng'}
             </>
           )}
         </button>

@@ -16,6 +16,9 @@ const EmailVerification = lazy(() => import('./pages/candidate/EmailVerification
 const CandidateJobs = lazy(() => import('./pages/candidate/Jobs'));
 const CandidateJobDetail = lazy(() => import('./pages/candidate/JobDetail'));
 const CandidateProfile = lazy(() => import('./pages/candidate/CandidateProfile'));
+const RecommendedJobs = lazy(() => import('./pages/candidate/RecommendedJobs'));
+const CandidateApplicationsPage = lazy(() => import('./features/applications/pages/CandidateApplicationsPage'));
+const EmployerApplicationsPage = lazy(() => import('./features/applications/pages/EmployerApplicationsPage'));
 const EmployerHome = lazy(() => import('./pages/employer/Home'));
 const EmployerDashboard = lazy(() => import('./pages/employer/Dashboard'));
 const EmployerLogin = lazy(() => import('./pages/employer/EmployerLogin'));
@@ -26,6 +29,7 @@ const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminCompaniesPage = lazy(() => import('./pages/admin/AdminCompaniesPage'));
+const AdminProfilePage = lazy(() => import('./pages/admin/AdminProfilePage'));
 
 function App() {
   return (
@@ -55,6 +59,7 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="companies" element={<AdminCompaniesPage />} />
+          <Route path="profile" element={<AdminProfilePage />} />
         </Route>
 
         {/* --- LUỒNG ỨNG VIÊN (CANDIDATE) --- */}
@@ -65,8 +70,10 @@ function App() {
         <Route path="/" element={<CandidateLayout />}>
           <Route index element={<CandidateHome />} />
           <Route path="jobs" element={<CandidateJobs />} />
+          <Route path="jobs/recommended" element={<RecommendedJobs />} />
           <Route path="jobs/:jobId" element={<CandidateJobDetail />} />
           <Route path="profile" element={<CandidateProfile />} />
+          <Route path="applications" element={<CandidateApplicationsPage />} />
         </Route>
 
         {/* --- LUỒNG NHÀ TUYỂN DỤNG (EMPLOYER) --- */}
@@ -75,9 +82,11 @@ function App() {
         <Route path="/employer" element={<EmployerLayout />}>
           <Route index element={<EmployerHome />} />
           <Route path="jobs/create" element={<CreateJobPage />} />
+          <Route path="jobs/:jobId/edit" element={<CreateJobPage />} />
         </Route>
         <Route path="/employer/dashboard" element={<EmployerDashboardLayout />}>
           <Route index element={<EmployerDashboard />} />
+          <Route path="applications" element={<EmployerApplicationsPage />} />
         </Route>
         <Route path="/employer/profile" element={<CompanyProfile />} />
       </Routes>

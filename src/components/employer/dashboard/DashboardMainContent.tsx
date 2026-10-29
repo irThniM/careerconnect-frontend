@@ -1,155 +1,131 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { extendEmployerJobDeadline, type EmployerDashboard, type EmployerDashboardJob } from '../../../api/employer';
 
 interface Props {
+  dashboard: EmployerDashboard | null;
   isVerified: boolean;
-  companyName: string;
-  userEmail: string;
-  jobPostCreditsRemaining: number;
+  isLoading: boolean;
+  error: string;
+  onRetry: () => void;
 }
 
-const DashboardMainContent: React.FC<Props> = ({ isVerified, companyName, jobPostCreditsRemaining }) => {
+const dateFormatter = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' });
+
+function displayDate(value: string | null): string {
+  if (!value) return 'Không giới hạn';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Chưa cập nhật' : dateFormatter.format(date);
+}
+
+function statusDisplay(status: string): { label: string; classes: string } {
+  switch (status.toUpperCase()) {
+    case 'OPEN': return { label: 'Đang tuyển', classes: 'bg-emerald-50 text-emerald-800' };
+    case 'PENDING_REVIEW': return { label: 'Chờ duyệt', classes: 'bg-amber-50 text-amber-800' };
+    case 'CLOSED': return { label: 'Đã đóng', classes: 'bg-slate-100 text-slate-600' };
+    case 'DRAFT': return { label: 'Bản nháp', classes: 'bg-indigo-50 text-indigo-700' };
+    default: return { label: status || 'Chưa rõ', classes: 'bg-slate-100 text-slate-600' };
+  }
+}
+
+function localDateValue(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function addDaysToDate(value: string, days: number): string {
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + days);
+  return localDateValue(date);
+}
+
+function nextAllowedDeadline(job: EmployerDashboardJob): string {
+  const tomorrow = addDaysToDate(localDateValue(new Date()), 1);
+  const currentDeadline = job.applicationDeadline?.slice(0, 10);
+  if (currentDeadline && currentDeadline >= tomorrow) return addDaysToDate(currentDeadline, 1);
+  return tomorrow;
+}
+
+const DashboardMainContent: React.FC<Props> = ({ dashboard, isVerified, isLoading, error, onRetry }) => {
   const navigate = useNavigate();
-  const canPost = isVerified && jobPostCreditsRemaining > 0;
+  const canPost = isVerified && (dashboard?.jobPostCreditsRemaining ?? 0) > 0;
+  const [deadlineTarget, setDeadlineTarget] = useState<EmployerDashboardJob | null>(null);
+  const [deadlineValue, setDeadlineValue] = useState('');
+  const [deadlineBusy, setDeadlineBusy] = useState(false);
+  const [deadlineError, setDeadlineError] = useState('');
+
+  const openDeadlineDialog = (job: EmployerDashboardJob) => {
+    const minDate = nextAllowedDeadline(job);
+    setDeadlineTarget(job);
+    setDeadlineValue(addDaysToDate(minDate, 6));
+    setDeadlineError('');
+  };
+
+  const submitDeadlineExtension = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!deadlineTarget) return;
+    setDeadlineBusy(true);
+    setDeadlineError('');
+    try {
+      await extendEmployerJobDeadline(deadlineTarget.id, deadlineValue);
+      setDeadlineTarget(null);
+      onRetry();
+    } catch (reason) {
+      setDeadlineError(reason instanceof Error ? reason.message : 'Chưa gia hạn được tin tuyển dụng.');
+    } finally {
+      setDeadlineBusy(false);
+    }
+  };
 
   return (
     <>
-      {/* BANNER CẢNH BÁO YÊU CẦU UPLOAD PDF KYB */}
       {!isVerified && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in zoom-in duration-300">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 border border-indigo-100 shadow-sm">
-              <span className="material-symbols-outlined text-[24px] text-indigo-600">policy</span>
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-indigo-900 mb-1">Xác thực Định danh Doanh nghiệp (KYB)</h3>
-              <p className="text-sm text-indigo-800/80 leading-relaxed max-w-3xl">
-                Để đảm bảo an toàn cho ứng viên, vui lòng tải lên bản mềm <strong>Giấy Đăng ký Kinh doanh (định dạng PDF)</strong>. Hệ thống sẽ tự động duyệt để mở khóa chức năng Đăng tin và AI Smart Match.
-              </p>
-            </div>
+        <section className="flex flex-col items-start justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 p-5 sm:flex-row sm:items-center">
+          <div className="flex items-start gap-3">
+            <span className="material-symbols-outlined rounded-full bg-white p-2 text-amber-700">policy</span>
+            <div><h2 className="font-bold text-amber-950">Hoàn tất xác minh doanh nghiệp</h2><p className="mt-1 max-w-3xl text-sm leading-5 text-amber-900/80">Tải giấy phép kinh doanh tại hồ sơ công ty để kích hoạt quyền đăng tin tuyển dụng.</p></div>
           </div>
-          <button onClick={() => navigate('/employer/profile')} className="shrink-0 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-lg shadow-sm transition-colors flex items-center gap-2">
-            Tải lên Giấy ĐKKD
-            <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
-          </button>
-        </div>
+          <button type="button" onClick={() => navigate('/employer/profile')} className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-amber-800 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-amber-900">Mở hồ sơ công ty<span className="material-symbols-outlined text-lg">arrow_forward</span></button>
+        </section>
       )}
 
-      {/* CHIA CỘT NỘI DUNG CHÍNH */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-6">
-        
-        {/* ====== CỘT TRÁI (8 Cột) ====== */}
-        <div className="lg:col-span-8 space-y-6">
-          {/* KHU VỰC: QUẢN LÝ JOB */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 relative">
-            {!isVerified && (
-              <div className="absolute inset-0 z-10 bg-slate-50/60 backdrop-blur-[2px] flex items-center justify-center rounded-xl border border-slate-200">
-                  <button onClick={() => navigate('/employer/profile')} className="px-6 py-2.5 bg-white text-slate-700 font-bold rounded-lg shadow-md border border-slate-200 hover:bg-slate-50 flex items-center gap-2 transition-all">
-                    <span className="material-symbols-outlined text-[18px] text-amber-500">warning</span>
-                    Xác thực giấy tờ để Đăng tin
-                  </button>
-              </div>
-            )}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-              <div>
-                <h2 className="text-lg text-slate-900 font-bold">Tin Tuyển Dụng Đang Chạy</h2>
-                <p className="text-sm text-slate-500">Còn {jobPostCreditsRemaining} lượt đăng tin cho công ty</p>
-              </div>
-            </div>
-            <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50">
-              <span className="material-symbols-outlined text-[48px] text-slate-300 mb-3">post_add</span>
-              <p className="text-slate-500 font-medium text-sm">Chưa có tin tuyển dụng nào.</p>
-              <button 
-                disabled={!canPost}
-                onClick={() => navigate('/employer/jobs/create')}
-                className="mt-3 px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold text-sm shadow-sm hover:bg-slate-50 disabled:opacity-50"
-              >
-                {!isVerified ? 'Xác minh công ty để đăng tin' : canPost ? 'Tạo tin đầu tiên' : 'Đã hết lượt đăng'}
-              </button>
-            </div>
+      {error && <div role="alert" className="flex flex-col justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 sm:flex-row sm:items-center"><span>{error}</span><button type="button" onClick={onRetry} className="shrink-0 font-bold underline">Tải lại</button></div>}
+
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(280px,0.8fr)]">
+        <section className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div><div className="flex items-center gap-2"><span className="h-5 w-1.5 rounded-full bg-emerald-600"/><h2 className="text-lg font-bold text-slate-900">Tin tuyển dụng của bạn</h2></div><p className="mt-1 text-sm text-slate-500">Chọn một tin để xem danh sách ứng viên và mức độ phù hợp.</p></div>
+            <button type="button" onClick={() => navigate(isVerified ? '/employer/jobs/create' : '/employer/profile')} disabled={isVerified && !canPost} className="inline-flex items-center gap-2 rounded-lg bg-blue-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:bg-slate-300"><span className="material-symbols-outlined text-lg">{isVerified ? 'add' : 'verified_user'}</span>{!isVerified ? 'Xác minh để đăng tin' : canPost ? 'Đăng tin mới' : 'Đã hết lượt đăng'}</button>
           </div>
 
-          {/* KHU VỰC: AI SMART MATCH */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100 relative overflow-hidden">
-            {!isVerified && (
-              <div className="absolute inset-0 z-10 bg-slate-50/70 backdrop-blur-[3px] flex flex-col items-center justify-center p-6 text-center border border-slate-200 rounded-xl">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                  <span className="material-symbols-outlined text-[32px] text-slate-400">lock</span>
-                </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">Tính năng Đang khóa</h3>
-                <p className="text-sm text-slate-600 mb-5 max-w-md">
-                  Hệ thống <strong>AI Smart Match</strong> và <strong>Tìm CV</strong> yêu cầu bạn phải tải lên Giấy Đăng ký Kinh doanh để đảm bảo tính xác thực của nền tảng.
-                </p>
-                <button onClick={() => navigate('/employer/profile')} className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg font-bold shadow-sm hover:bg-emerald-700 transition-colors flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">verified</span>
-                  Đi tới trang Xác thực
-                </button>
-              </div>
-            )}
+          {isLoading ? <div className="space-y-3" aria-label="Đang tải tin tuyển dụng">{[0, 1, 2].map((item) => <div key={item} className="h-20 animate-pulse rounded-xl bg-slate-100" />)}</div> : dashboard?.recentJobs.length ? <div className="divide-y divide-slate-100">{dashboard.recentJobs.map((job) => {
+            const status = statusDisplay(job.status);
+            return <article key={job.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-start gap-3"><span className="material-symbols-outlined mt-0.5 rounded-lg bg-indigo-50 p-2 text-blue-900">work_outline</span><div className="min-w-0"><h3 className="truncate text-sm font-bold text-slate-900">{job.title}</h3><p className="mt-1 truncate text-xs text-slate-500">{job.position}</p><p className="mt-2 text-xs text-slate-500">Đăng ngày {displayDate(job.createdAt)} · Hạn nhận hồ sơ {displayDate(job.applicationDeadline)} · <strong className="text-slate-700">{job.applicationCount} ứng viên</strong></p></div></div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2 pl-11 sm:pl-0"><span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${status.classes}`}>{status.label}</span><Link to={`/employer/jobs/${job.id}/edit`} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"><span className="material-symbols-outlined text-base">edit</span>Sửa tin</Link><button type="button" onClick={() => openDeadlineDialog(job)} disabled={job.status.toUpperCase() !== 'OPEN'} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50" title={job.status.toUpperCase() !== 'OPEN' ? 'Chỉ gia hạn tin đang tuyển' : undefined}><span className="material-symbols-outlined text-base">event_repeat</span>Gia hạn</button><Link to={`/employer/dashboard/applications?jobId=${job.id}`} className="inline-flex items-center gap-1 rounded-lg bg-blue-950 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-900"><span className="material-symbols-outlined text-base">groups</span>Xem ứng viên</Link>{job.status.toUpperCase() === 'OPEN' && <Link to={`/jobs/${job.id}`} className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-blue-900 hover:bg-indigo-50">Xem tin<span className="material-symbols-outlined text-base">open_in_new</span></Link>}</div>
+            </article>;
+          })}</div> : !error && <div className="rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 py-12 text-center"><span className="material-symbols-outlined text-4xl text-slate-400">post_add</span><p className="mt-3 font-semibold text-slate-800">Doanh nghiệp chưa có tin tuyển dụng</p><p className="mt-1 text-sm text-slate-500">Tin đã tạo sẽ xuất hiện tại đây cùng trạng thái hiện tại.</p>{canPost && <button type="button" onClick={() => navigate('/employer/jobs/create')} className="mt-4 rounded-lg bg-blue-950 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-900">Tạo tin đầu tiên</button>}</div>}
+        </section>
 
-            <div className={`transition-opacity duration-300 ${!isVerified ? 'opacity-30 pointer-events-none select-none' : ''}`}>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600">
-                  <span className="material-symbols-outlined text-[24px]">neurology</span>
-                </div>
-                <div>
-                  <h2 className="text-lg text-slate-900 font-bold flex items-center gap-2">
-                    Gợi Ý AI: Ứng Viên Tiềm Năng
-                    <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">Pro</span>
-                  </h2>
-                  <p className="text-sm text-slate-500">Tự động quét CV phù hợp với JD của bạn</p>
-                </div>
-              </div>
-
-              <div className="bg-slate-50 rounded-xl p-5 border border-slate-100">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex gap-3">
-                    <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">NA</div>
-                    <div>
-                      <h4 className="font-bold text-slate-800">Nguyễn Văn A</h4>
-                      <p className="text-sm text-slate-500">Senior Frontend Developer</p>
-                    </div>
-                  </div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-100 text-indigo-700 text-xs font-bold">
-                    <span className="material-symbols-outlined text-[14px]">bolt</span> 98% Match
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <button className="flex-1 py-2 bg-emerald-600 text-white rounded-lg font-bold text-sm">Mời ứng tuyển</button>
-                  <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg font-bold text-sm">Xem CV</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ====== CỘT PHẢI (4 Cột) ====== */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-100">
-            <div className="flex items-center gap-4 mb-5">
-              <div className="w-14 h-14 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold text-xl shadow-sm">
-                <span className="material-symbols-outlined text-[28px]">domain</span>
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 text-base line-clamp-1">{companyName}</h3>
-                {isVerified ? (
-                  <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full uppercase tracking-wide">
-                    <span className="material-symbols-outlined text-[14px]">verified</span> Verified Employer
-                  </span>
-                ) : (
-                  <span className="mt-1 inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase tracking-wide border border-rose-200">
-                    <span className="material-symbols-outlined text-[14px]">warning</span> Chờ xác thực Giấy tờ
-                  </span>
-                )}
-              </div>
-            </div>
-            <button onClick={() => navigate('/employer/profile')} className="w-full py-2.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm transition-colors shadow-sm flex justify-center items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">edit</span>
-              Chỉnh sửa hồ sơ công ty
-            </button>
-          </div>
-        </div>
+        <aside className="space-y-5">
+          <section className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
+            <div className="mb-5 flex items-center gap-3"><span className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-blue-900"><span className="material-symbols-outlined text-2xl">domain</span></span><div className="min-w-0"><h2 className="truncate font-bold text-slate-900">{dashboard?.companyName || 'Doanh nghiệp của bạn'}</h2><span className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold ${isVerified ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}>{isVerified ? 'Đã xác minh' : 'Chưa xác minh'}</span></div></div>
+            <p className="border-t border-slate-100 pt-4 text-sm leading-5 text-slate-600">{isVerified ? 'Hồ sơ doanh nghiệp đã được xác minh. Bạn có thể quản lý tin tuyển dụng theo hạn mức hiện có.' : 'Cập nhật và xác minh giấy phép doanh nghiệp để mở quyền đăng tin.'}</p>
+            <button type="button" onClick={() => navigate('/employer/profile')} className="mt-4 w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Xem hồ sơ doanh nghiệp</button>
+          </section>
+          <section className="rounded-xl border border-blue-100 bg-blue-950 p-5 text-white shadow-sm"><span className="material-symbols-outlined text-2xl text-indigo-200">tips_and_updates</span><h2 className="mt-2 font-bold">Mẹo đăng tin rõ ràng</h2><p className="mt-2 text-sm leading-5 text-indigo-100">Nêu chức danh, địa điểm, yêu cầu và quyền lợi cụ thể để ứng viên dễ đánh giá công việc.</p><button type="button" onClick={() => navigate('/employer/jobs/create')} disabled={!canPost} className="mt-4 w-full rounded-lg bg-white px-4 py-2.5 text-sm font-bold text-blue-950 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-60">Mở biểu mẫu đăng tin</button></section>
+        </aside>
       </div>
+      {deadlineTarget && <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/45 p-4" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !deadlineBusy) setDeadlineTarget(null); }}>
+        <form onSubmit={submitDeadlineExtension} className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="extend-deadline-title">
+          <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-blue-800">Gia hạn tin tuyển dụng</p><h2 id="extend-deadline-title" className="mt-2 text-lg font-bold text-slate-950">{deadlineTarget.title}</h2></div><button type="button" onClick={() => setDeadlineTarget(null)} disabled={deadlineBusy} className="rounded-lg p-1 text-slate-500 hover:bg-slate-100" aria-label="Đóng"><span className="material-symbols-outlined">close</span></button></div>
+          <label htmlFor="extended-application-deadline" className="mt-5 block text-sm font-semibold text-slate-800">Hạn nhận hồ sơ mới</label>
+          <input id="extended-application-deadline" type="date" required min={nextAllowedDeadline(deadlineTarget)} value={deadlineValue} onChange={(event) => setDeadlineValue(event.target.value)} className="mt-2 w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-blue-700 focus:ring-2 focus:ring-blue-100" />
+          <p className="mt-2 text-xs text-slate-500">Ngày mới phải sau hạn hiện tại và sau hôm nay.</p>
+          {deadlineError && <p role="alert" className="mt-3 rounded-lg bg-rose-50 p-3 text-sm text-rose-800">{deadlineError}</p>}
+          <div className="mt-6 flex justify-end gap-2"><button type="button" onClick={() => setDeadlineTarget(null)} disabled={deadlineBusy} className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700">Hủy</button><button type="submit" disabled={deadlineBusy || !deadlineValue} className="rounded-lg bg-blue-950 px-4 py-2 text-sm font-bold text-white disabled:opacity-60">{deadlineBusy ? 'Đang lưu…' : 'Lưu hạn mới'}</button></div>
+        </form>
+      </div>}
     </>
   );
 };

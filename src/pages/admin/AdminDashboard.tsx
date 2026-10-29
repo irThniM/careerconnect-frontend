@@ -1,45 +1,33 @@
-import { useState, useEffect } from 'react';
-import { apiFetch } from '../../api/client';
+import { useEffect, useState } from 'react';
+import { getAdminCompanies, getAdminDashboardStats, getAdminUsers, type AdminCompany, type AdminDashboardStats, type AdminUser } from '../../api/admin';
 import DashboardMainContent from '../../components/admin/dashboard/DashboardMainContent';
+import { exportAdminReport } from '../../utils/adminReportExport';
 
 export default function AdminDashboard() {
-    // State lưu trữ các con số thống kê
-    const [stats, setStats] = useState({
-        totalCandidates: 0,
-        totalCompanies: 0,
-        pendingCompanies: 0,
-        openJobs: 0
-    });
-    const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<AdminDashboardStats | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [companies, setCompanies] = useState<AdminCompany[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
 
-    useEffect(() => {
-        const fetchDashboardStats = async () => {
-            try {
-                const token = localStorage.getItem('accessToken');
-                const response = await apiFetch('Admin/dashboard-stats', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+  useEffect(() => {
+    let active = true;
+    setIsLoading(true);
+    Promise.all([getAdminDashboardStats(), getAdminUsers(), getAdminCompanies()])
+      .then(([nextStats, nextUsers, nextCompanies]) => {
+        if (!active) return;
+        setStats(nextStats);
+        setUsers(nextUsers);
+        setCompanies(nextCompanies);
+        setError('');
+      })
+      .catch((requestError: unknown) => {
+        if (active) setError(requestError instanceof Error ? requestError.message : 'Không tải được dữ liệu quản trị.');
+      })
+      .finally(() => { if (active) setIsLoading(false); });
+    return () => { active = false; };
+  }, [refreshKey]);
 
-                if (response.ok) {
-                    const data = await response.json();
-                    setStats(data);
-                } else {
-                    console.error('Lỗi phân quyền hoặc server từ chối.');
-                }
-            } catch (error) {
-                console.error('Lỗi khi gọi API thống kê:', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchDashboardStats();
-    }, []);
-
-    // Truyền dữ liệu stats và trạng thái loading xuống component con
-    return (
-        <DashboardMainContent stats={stats} isLoading={isLoading} />
-    );
+  return <DashboardMainContent stats={stats} users={users} companies={companies} isLoading={isLoading} error={error} onRefresh={() => setRefreshKey((current) => current + 1)} onExport={(kind) => exportAdminReport(kind, users, companies)}/>;
 }

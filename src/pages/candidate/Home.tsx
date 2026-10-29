@@ -20,6 +20,7 @@ const Home: React.FC = () => {
   const [jobsState, setJobsState] = useState<HomeJobsState>({ ready: false, data: emptyJobs, error: '' });
   const [profile, setProfile] = useState<CandidateProfileSummary | null>(null);
   const [profileReady, setProfileReady] = useState(false);
+  const [profileError, setProfileError] = useState(false);
   const signedInCandidate = isAuthenticatedAs('Candidate');
   const fullName = profile?.fullName || localStorage.getItem('fullName') || '';
   const showToast = successKey !== null && dismissedToastKey !== successKey;
@@ -32,9 +33,12 @@ const Home: React.FC = () => {
 
     if (signedInCandidate) {
       apiFetch('CandidateProfile/me')
-        .then(async (response) => response.ok ? await response.json() as CandidateProfileSummary : null)
+        .then(async (response) => {
+          if (!response.ok) throw new Error('Không tải được hồ sơ ứng viên.');
+          return await response.json() as CandidateProfileSummary;
+        })
         .then((data) => { if (active && data) setProfile(data); })
-        .catch(() => undefined)
+        .catch(() => { if (active) setProfileError(true); })
         .finally(() => { if (active) setProfileReady(true); });
     } else {
       setProfileReady(true);
@@ -64,7 +68,7 @@ const Home: React.FC = () => {
   return (
     <div className="flex w-full flex-col bg-[#f8f7ff]">
       {showToast && <div className="fixed right-6 top-24 z-50 flex items-center gap-3 rounded-xl bg-emerald-700 px-5 py-3 text-white shadow-xl" role="status"><span className="material-symbols-outlined">task_alt</span><div><p className="text-sm font-bold">Đăng nhập thành công!</p><p className="text-xs text-white/85">Chào mừng {fullName || 'bạn'} trở lại CareerConnect.</p></div></div>}
-      <CandidateWelcomePanel signedInCandidate={signedInCandidate} fullName={fullName} isLookingForJob={profile?.isLookingForJob ?? true} profileCompletion={profileCompletion} profileReady={profileReady} />
+      <CandidateWelcomePanel signedInCandidate={signedInCandidate} fullName={fullName} isLookingForJob={profile?.isLookingForJob ?? true} profileCompletion={profileCompletion} profileReady={profileReady} profileError={profileError} jobsReady={jobsState.ready} jobsError={Boolean(jobsState.error)} publicJobCount={jobsState.data.totalCount} />
       <CandidateJobSearch />
       <section className="px-4 pb-10 pt-4 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-[1320px] items-start gap-5 lg:grid-cols-[minmax(0,1.7fr)_minmax(280px,0.8fr)]">
@@ -73,7 +77,7 @@ const Home: React.FC = () => {
             <HiringEmployersSection employers={employers} />
             <CandidateQuickLinks signedInCandidate={signedInCandidate} />
           </div>
-          <CandidateHomeSidebar signedInCandidate={signedInCandidate} profileReady={profileReady} profileCompletion={profileCompletion} professionalTitle={profile?.professionalTitle ?? null} />
+          <CandidateHomeSidebar signedInCandidate={signedInCandidate} profileReady={profileReady} profileError={profileError} profileCompletion={profileCompletion} professionalTitle={profile?.professionalTitle ?? null} />
         </div>
       </section>
     </div>

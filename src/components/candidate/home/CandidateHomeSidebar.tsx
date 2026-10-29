@@ -4,16 +4,17 @@ import { Link } from 'react-router-dom';
 type Props = {
   signedInCandidate: boolean;
   profileReady: boolean;
+  profileError: boolean;
   profileCompletion: number;
   professionalTitle: string | null;
 };
 
-const CandidateHomeSidebar: React.FC<Props> = ({ signedInCandidate, profileReady, profileCompletion, professionalTitle }) => (
+const CandidateHomeSidebar: React.FC<Props> = ({ signedInCandidate, profileReady, profileError, profileCompletion, professionalTitle }) => (
   <aside className="space-y-4 lg:sticky lg:top-24">
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between gap-3"><h2 className="font-bold text-slate-900">Hồ sơ ứng viên</h2><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-800">{signedInCandidate && profileReady ? `${profileCompletion}%` : signedInCandidate ? '…' : 'Chưa đăng nhập'}</span></div>
-      <p className="mt-2 text-sm leading-5 text-slate-600">{signedInCandidate ? (professionalTitle || 'Thêm vị trí mong muốn để giới thiệu rõ định hướng nghề nghiệp.') : 'Đăng nhập để lưu thông tin cơ bản và tiếp tục hoàn thiện hồ sơ.'}</p>
-      <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-600 transition-all" style={{ width: `${signedInCandidate && profileReady ? profileCompletion : 0}%` }} /></div>
+      <div className="flex items-center justify-between gap-3"><h2 className="font-bold text-slate-900">Hồ sơ ứng viên</h2><span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-800">{signedInCandidate ? profileError ? '—' : profileReady ? `${profileCompletion}%` : '…' : 'Chưa đăng nhập'}</span></div>
+      <p className="mt-2 text-sm leading-5 text-slate-600">{signedInCandidate ? profileError ? 'Không thể tải hồ sơ lúc này. Bạn có thể thử tải lại trang.' : (professionalTitle || 'Thêm vị trí mong muốn để giới thiệu rõ định hướng nghề nghiệp.') : 'Đăng nhập để lưu thông tin cơ bản và tiếp tục hoàn thiện hồ sơ.'}</p>
+      <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-600 transition-all" style={{ width: `${signedInCandidate && profileReady && !profileError ? profileCompletion : 0}%` }} /></div>
       <Link to={signedInCandidate ? '/profile' : '/login'} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"><span className="material-symbols-outlined text-lg">{signedInCandidate ? 'edit' : 'login'}</span>{signedInCandidate ? 'Quản lý hồ sơ cá nhân' : 'Đăng nhập ứng viên'}</Link>
       <p className="mt-3 text-xs text-slate-500">CV, kỹ năng và ứng tuyển trực tuyến sẽ được kết nối ở giai đoạn tiếp theo.</p>
     </section>

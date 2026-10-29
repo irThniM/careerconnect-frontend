@@ -7,12 +7,14 @@ type JobGeneralInfoProps = {
   categories: JobCategoryOption[];
   isLoadingCategories: boolean;
   categoryLoadError: string;
+  autoSuggestCategory?: boolean;
 };
 
 export const JobGeneralInfo = ({
   categories,
   isLoadingCategories,
   categoryLoadError,
+  autoSuggestCategory = true,
 }: JobGeneralInfoProps) => {
   const {
     register,
@@ -28,13 +30,13 @@ export const JobGeneralInfo = ({
   const suggestedCategory = suggestJobCategory(position, categories);
 
   useEffect(() => {
-    if (hasManuallySelectedCategory || isLoadingCategories || categories.length === 0) return;
+    if (!autoSuggestCategory || hasManuallySelectedCategory || isLoadingCategories || categories.length === 0) return;
 
     setValue('categoryId', suggestedCategory?.id ?? null, {
       shouldDirty: false,
       shouldValidate: false,
     });
-  }, [categories.length, hasManuallySelectedCategory, isLoadingCategories, setValue, suggestedCategory?.id]);
+  }, [autoSuggestCategory, categories.length, hasManuallySelectedCategory, isLoadingCategories, setValue, suggestedCategory?.id]);
 
   const categoryRegistration = register('categoryId', {
     setValueAs: (value) => value === '' ? null : Number(value),

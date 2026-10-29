@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { apiFetch } from '../../api/client';
 import { createJobSchema, type CreateJobFormValues } from '../../utils/createJobSchema';
@@ -12,6 +12,7 @@ import { toast } from 'react-hot-toast/headless';
 import LoadingOverlay from '../../components/common/LoadingOverlay';
 import type { JobCategoryOption } from '../../utils/jobCategoryDictionary';
 import { isAuthenticatedAs } from '../../utils/auth';
+import { getEmployerJobForEdit, updateEmployerJob, type EmployerJobEdit } from '../../api/employer';
 
 interface CompanyPostingProfile {
   status: string;
@@ -20,6 +21,8 @@ interface CompanyPostingProfile {
 
 const CreateJobPage = () => {
   const navigate = useNavigate();
+  const { jobId } = useParams<{ jobId: string }>();
+  const isEditMode = Boolean(jobId);
   const [companyProfile, setCompanyProfile] = useState<CompanyPostingProfile | null>(null);
   const [isLoadingCompanyProfile, setIsLoadingCompanyProfile] = useState(true);
   const [companyProfileError, setCompanyProfileError] = useState('');
@@ -27,6 +30,8 @@ const CreateJobPage = () => {
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [categoryLoadError, setCategoryLoadError] = useState('');
   const [formResetKey, setFormResetKey] = useState(0);
+  const [isLoadingEditJob, setIsLoadingEditJob] = useState(Boolean(jobId));
+  const [editJobError, setEditJobError] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -119,10 +124,60 @@ const CreateJobPage = () => {
     }
   });
 
+  useEffect(() => {
+    if (!jobId) {
+      setIsLoadingEditJob(false);
+      setEditJobError('');
+      return;
+    }
+    let isMounted = true;
+    setIsLoadingEditJob(true);
+    setEditJobError('');
+
+    getEmployerJobForEdit(jobId)
+      .then((job) => {
+        if (!isMounted) return;
+        const deadline = job.applicationDeadline?.slice(0, 10) || (() => {
+          const date = new Date();
+          date.setDate(date.getDate() + 14);
+          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        })();
+        methods.reset({
+          title: job.title,
+          position: job.position,
+          categoryId: job.categoryId,
+          applicationDeadline: deadline,
+          employmentType: job.employmentType,
+          workMode: job.workMode,
+          quantity: job.quantity,
+          salaryMin: job.salaryMin === null ? null : Number(job.salaryMin) / 1_000_000,
+          salaryMax: job.salaryMax === null ? null : Number(job.salaryMax) / 1_000_000,
+          isSalaryNegotiable: job.isSalaryNegotiable,
+          experienceRequired: job.experienceRequired || '',
+          educationRequired: job.educationRequired || '',
+          location: job.location || '',
+          jobDescription: job.jobDescription,
+          jobRequirements: job.jobRequirements,
+          jobBenefits: job.jobBenefits || '',
+          requiredSkillIds: job.requiredSkillIds || [],
+        });
+        setFormResetKey((current) => current + 1);
+        setEditJobError('');
+      })
+      .catch((error: unknown) => {
+        if (isMounted) setEditJobError(error instanceof Error ? error.message : 'Không tải được tin tuyển dụng để chỉnh sửa.');
+      })
+      .finally(() => { if (isMounted) setIsLoadingEditJob(false); });
+
+    return () => { isMounted = false; };
+  }, [jobId, methods.reset]);
+
+  const canSubmit = isEditMode ? !isLoadingEditJob && !editJobError : canPost;
+
   // 2. Hàm gọi API POST gửi xuống Backend
- const onSubmit = async (data: CreateJobFormValues) => {
-    if (!canPost) {
-      toast.error(!isCompanyVerified
+  const onSubmit = async (data: CreateJobFormValues) => {
+    if (!canSubmit) {
+      toast.error(isEditMode ? 'Chưa tải được tin cần chỉnh sửa.' : !isCompanyVerified
         ? 'Công ty cần xác minh giấy tờ trước khi đăng tin.'
         : 'Công ty đã hết lượt đăng tin hiện có.');
       return;
@@ -140,6 +195,13 @@ const CreateJobPage = () => {
       applicationDeadline: data.applicationDeadline + "T00:00:00Z"
     };
     try {
+      if (isEditMode && jobId) {
+        await updateEmployerJob(jobId, payloadToSend as EmployerJobEdit);
+        toast.success('Đã cập nhật tin tuyển dụng.');
+        navigate('/employer/dashboard');
+        return;
+      }
+
       const token = localStorage.getItem('accessToken');
       if (!token) throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
 
@@ -194,10 +256,10 @@ const CreateJobPage = () => {
             CareerConnect · Nhà tuyển dụng
           </p>
           <h1 className="mt-2 font-headline-lg text-headline-lg font-bold text-on-surface sm:text-headline-xl">
-            Tạo tin tuyển dụng
+            {isEditMode ? 'Chỉnh sửa tin tuyển dụng' : 'Tạo tin tuyển dụng'}
           </h1>
           <p className="mt-2 max-w-2xl font-body-regular text-body-regular text-on-surface-variant">
-            Nhập thông tin rõ ràng để ứng viên hiểu vị trí. Có thể dùng các mức lương và hạn đăng nhanh, sau đó chỉnh lại theo nhu cầu.
+            {isEditMode ? 'Cập nhật nội dung tin. Khi thay đổi mô tả hoặc yêu cầu, dữ liệu gợi ý sẽ được đồng bộ lại.' : 'Nhập thông tin rõ ràng để ứng viên hiểu vị trí. Có thể dùng các mức lương và hạn đăng nhanh, sau đó chỉnh lại theo nhu cầu.'}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-container-lowest px-3 py-1.5 font-metadata-label text-metadata-label font-medium text-on-surface-variant">
@@ -224,14 +286,18 @@ const CreateJobPage = () => {
         </button>
         <section
           className={`mb-space-lg flex flex-col gap-3 rounded-2xl border px-space-lg py-4 sm:flex-row sm:items-center sm:justify-between ${
-            canPost
+            canSubmit
               ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
               : 'border-amber-200 bg-amber-50 text-amber-950'
           }`}
           aria-live="polite"
         >
           <div>
-            {isLoadingCompanyProfile ? (
+            {isEditMode ? (
+              isLoadingEditJob ? <p className="font-body-compact text-body-compact font-semibold">Đang tải nội dung tin tuyển dụng…</p>
+                : editJobError ? <><p className="font-body-compact text-body-compact font-bold">Không mở được tin tuyển dụng</p><p className="mt-1 text-sm">{editJobError}</p></>
+                  : <><p className="font-body-compact text-body-compact font-bold">Đang chỉnh sửa tin hiện có</p><p className="mt-1 text-sm">Lưu thay đổi không sử dụng thêm lượt đăng tin.</p></>
+            ) : isLoadingCompanyProfile ? (
               <p className="font-body-compact text-body-compact font-semibold">Đang kiểm tra trạng thái công ty và lượt đăng...</p>
             ) : companyProfileError ? (
               <>
@@ -255,7 +321,7 @@ const CreateJobPage = () => {
               </>
             )}
           </div>
-          {!isLoadingCompanyProfile && !isCompanyVerified && (
+          {!isEditMode && !isLoadingCompanyProfile && !isCompanyVerified && (
             <button
               type="button"
               onClick={() => navigate('/employer/profile')}
@@ -276,6 +342,7 @@ const CreateJobPage = () => {
                 categories={categories}
                 isLoadingCategories={isLoadingCategories}
                 categoryLoadError={categoryLoadError}
+                autoSuggestCategory={!isEditMode}
               />
               <JobContentEditor />
             </div>
@@ -283,9 +350,10 @@ const CreateJobPage = () => {
             {/* Cột phải 30% */}
             <div className="lg:col-span-4 flex flex-col gap-space-lg">
               <JobSidebarSettings
-                canPost={canPost}
-                isCompanyVerified={isCompanyVerified}
+                canPost={canSubmit}
+                isCompanyVerified={isEditMode || isCompanyVerified}
                 remainingJobPostCredits={remainingJobPostCredits}
+                mode={isEditMode ? 'edit' : 'create'}
               />
             </div>
 
@@ -294,8 +362,8 @@ const CreateJobPage = () => {
       </div>
       <LoadingOverlay
         isOpen={isSubmitting}
-        title="Đang đăng tin tuyển dụng"
-        description="Tin tuyển dụng đang được lưu và tạo dữ liệu phục vụ gợi ý việc làm."
+        title={isEditMode ? 'Đang cập nhật tin tuyển dụng' : 'Đang đăng tin tuyển dụng'}
+        description={isEditMode ? 'Đang lưu thông tin và đồng bộ vector khi nội dung thay đổi.' : 'Tin tuyển dụng đang được lưu và tạo dữ liệu phục vụ gợi ý việc làm.'}
       />
     </main>
   );

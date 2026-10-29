@@ -1,71 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface Props {
-    email: string;
-    setEmail: (val: string) => void;
-    password: string;
-    setPassword: (val: string) => void;
-    handleLoginSubmit: (e: React.FormEvent) => void;
-    isLoading: boolean;
-    errorMsg: string;
+  email: string;
+  setEmail: (value: string) => void;
+  password: string;
+  setPassword: (value: string) => void;
+  handleLoginSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  isLoading: boolean;
+  errorMsg: string;
 }
 
-export default function AdminLoginForm({
-    email, setEmail, password, setPassword, handleLoginSubmit, isLoading, errorMsg
-}: Props) {
-    return (
-        <form onSubmit={handleLoginSubmit} className="space-y-4">
-            {errorMsg && (
-                <div className="rounded-lg bg-red-500/10 p-3 text-red-500 border border-red-500/30 text-sm flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[18px]">error</span>
-                    {errorMsg}
-                </div>
-            )}
-            
-            <div>
-                <label className="mb-1 block text-sm font-medium text-gray-300">Email Quản trị</label>
-                <input 
-                    type="email" 
-                    disabled={isLoading}
-                    className="w-full rounded-lg border border-gray-600 bg-gray-700/50 p-2.5 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@careerconnect.vn"
-                    required 
-                />
-            </div>
-            
-            <div>
-                <label className="mb-1 block text-sm font-medium text-gray-300">Mật khẩu</label>
-                <input 
-                    type="password" 
-                    disabled={isLoading}
-                    className="w-full rounded-lg border border-gray-600 bg-gray-700/50 p-2.5 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required 
-                />
-            </div>
-            
-            <button 
-                type="submit" 
-                disabled={isLoading}
-                className="mt-4 w-full h-11 rounded-lg bg-blue-600 font-bold text-white transition-all hover:bg-blue-700 active:scale-[0.98] disabled:bg-blue-800 disabled:cursor-not-allowed flex justify-center items-center"
-            >
-                {isLoading ? (
-                    <div className="flex items-center gap-2">
-                        {/* Icon xoay xoay bằng SVG Tailwind */}
-                        <svg className="h-5 w-5 animate-spin text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <span>Đang xác thực...</span>
-                    </div>
-                ) : (
-                    <span>Đăng Nhập Hệ Thống</span>
-                )}
-            </button>
-        </form>
-    );
+export default function AdminLoginForm({ email, setEmail, password, setPassword, handleLoginSubmit, isLoading, errorMsg }: Props) {
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <form onSubmit={handleLoginSubmit} className="space-y-5">
+      {errorMsg && <div role="alert" className="flex items-start gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800"><span className="material-symbols-outlined text-lg">error</span><span>{errorMsg}</span></div>}
+      <label className="block"><span className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wide text-slate-700"><span>Email quản trị</span><span className="font-normal normal-case tracking-normal text-slate-500">Tài khoản được cấp quyền</span></span><span className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition focus-within:border-blue-700 focus-within:ring-4 focus-within:ring-blue-700/10"><span className="material-symbols-outlined text-blue-900">badge</span><input type="email" autoComplete="username" required disabled={isLoading} value={email} onChange={(event) => setEmail(event.target.value)} placeholder="admin@careerconnect.vn" className="min-w-0 flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:opacity-60"/></span></label>
+      <label className="block"><span className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-wide text-slate-700"><span>Mật khẩu</span><span className="font-normal normal-case tracking-normal text-slate-500">Không chia sẻ mật khẩu</span></span><span className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 transition focus-within:border-blue-700 focus-within:ring-4 focus-within:ring-blue-700/10"><span className="material-symbols-outlined text-blue-900">lock</span><input type={showPassword ? 'text' : 'password'} autoComplete="current-password" required disabled={isLoading} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Nhập mật khẩu" className="min-w-0 flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400 disabled:opacity-60"/><button type="button" aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'} onClick={() => setShowPassword((visible) => !visible)} className="rounded-md p-1 text-slate-500 hover:bg-slate-200 hover:text-slate-800"><span className="material-symbols-outlined text-xl">{showPassword ? 'visibility_off' : 'visibility'}</span></button></span></label>
+      <div className="flex items-center justify-between gap-3 rounded-xl bg-indigo-50 px-4 py-3 text-xs text-blue-950"><span className="flex items-center gap-2"><span className="material-symbols-outlined text-lg">verified_user</span>Chỉ tài khoản Admin mới đăng nhập được tại đây.</span><span className="hidden shrink-0 items-center gap-1 font-semibold text-emerald-800 sm:flex"><span className="h-2 w-2 rounded-full bg-emerald-600"/>Bảo mật</span></div>
+      <button type="submit" disabled={isLoading} className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-blue-950 px-5 font-bold text-white shadow-md transition hover:bg-blue-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60">{isLoading ? <><span className="material-symbols-outlined animate-spin">progress_activity</span>Đang xác thực…</> : <>Đăng nhập quản trị<span className="material-symbols-outlined">arrow_forward</span></>}</button>
+    </form>
+  );
 }

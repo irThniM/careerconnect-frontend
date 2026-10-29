@@ -52,8 +52,10 @@ const CandidateHeader: React.FC = () => {
           </Link>
           
           <nav className="hidden lg:flex items-center gap-1 ml-space-md">
-            <Link to="/jobs" className={`rounded-lg px-3 py-2 text-sm transition-colors ${location.pathname.startsWith('/jobs') ? 'bg-primary-fixed font-bold text-on-primary-fixed' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}>Việc làm</Link>
+            <Link to="/jobs" className={`rounded-lg px-3 py-2 text-sm transition-colors ${location.pathname.startsWith('/jobs') && location.pathname !== '/jobs/recommended' ? 'bg-primary-fixed font-bold text-on-primary-fixed' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}>Việc làm</Link>
+            {isSignedIn && <Link to="/jobs/recommended" className={`rounded-lg px-3 py-2 text-sm transition-colors ${location.pathname === '/jobs/recommended' ? 'bg-primary-fixed font-bold text-on-primary-fixed' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}>Gợi ý cho bạn</Link>}
             <Link to={isSignedIn ? '/profile' : '/login'} className={`rounded-lg px-3 py-2 text-sm transition-colors ${location.pathname === '/profile' ? 'bg-primary-fixed font-bold text-on-primary-fixed' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}>Hồ sơ ứng viên</Link>
+            {isSignedIn && <Link to="/applications" className={`rounded-lg px-3 py-2 text-sm transition-colors ${location.pathname === '/applications' ? 'bg-primary-fixed font-bold text-on-primary-fixed' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}>Đã ứng tuyển</Link>}
           </nav>
         </div>
         

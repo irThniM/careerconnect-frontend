@@ -41,6 +41,18 @@ export type JobSearchResponse = {
   totalCount: number;
 };
 
+export type CandidateJobRecommendationsResponse = {
+  isProfileReady: boolean;
+  message: string | null;
+  totalCount: number;
+  items: Array<{
+    job: JobListItem;
+    similarityPercentage: number;
+    sameArea: boolean;
+    remote: boolean;
+  }>;
+};
+
 export type JobDetails = {
   id: number;
   title: string;
@@ -93,6 +105,15 @@ export async function searchJobs(
   });
 
   const response = await apiFetch(`jobs?${query.toString()}`, { signal });
+  if (!response.ok) throw new Error(await readError(response));
+  return response.json();
+}
+
+export async function getCandidateJobRecommendations(
+  limit = 5,
+  signal?: AbortSignal,
+): Promise<CandidateJobRecommendationsResponse> {
+  const response = await apiFetch(`CandidateProfile/me/recommendations?limit=${limit}`, { signal });
   if (!response.ok) throw new Error(await readError(response));
   return response.json();
 }

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import { employmentTypeLabel, formatDate, formatSalaryRange, workModeLabel, type JobDetails } from '../../../api/jobs';
+import CandidateApplyCard from './CandidateApplyCard';
 
 function externalUrl(value: string): string {
   return /^https?:\/\//i.test(value) ? value : `https://${value}`;
@@ -19,7 +19,7 @@ const JobCompanySidebar: React.FC<{ job: JobDetails }> = ({ job }) => {
 
   return (
     <aside className="space-y-space-md lg:sticky lg:top-6 lg:col-span-4">
-      <section className="rounded-2xl bg-primary p-space-lg text-on-primary shadow-sm"><h2 className="font-headline-md text-headline-md font-bold">Bạn quan tâm vị trí này?</h2><p className="mt-2 font-body-compact text-body-compact text-on-primary/85">Tin được đăng ngày {formatDate(job.createdAt)}. Chức năng ứng tuyển sẽ được kết nối sau khi luồng hồ sơ ứng viên hoàn thiện.</p><Link to="/jobs" className="mt-space-md inline-flex w-full items-center justify-center gap-2 rounded-xl bg-surface-container-lowest px-4 py-3 font-body-compact text-body-compact font-semibold text-primary hover:bg-primary-fixed"><span className="material-symbols-outlined text-[18px]">search</span>Xem việc làm khác</Link></section>
+      <CandidateApplyCard jobId={job.id}/>
       <section className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-space-lg shadow-sm">
         <div className="flex items-center gap-space-sm"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary-fixed font-headline-md text-headline-md font-bold text-primary">{companyInitials(company.name)}</div><div className="min-w-0"><h2 className="font-job-title-card text-job-title-card font-bold text-on-surface">{company.name}</h2><p className="mt-1 font-body-compact text-body-compact text-on-surface-variant">{company.industry || 'Chưa cập nhật ngành nghề'}</p></div></div>
         {company.description && <div className="mt-space-md border-t border-outline-variant/40 pt-space-md"><h3 className="font-body-compact text-body-compact font-semibold text-on-surface">Giới thiệu công ty</h3><p className="mt-2 whitespace-pre-line font-body-compact text-body-compact leading-6 text-on-surface-variant">{company.description}</p></div>}

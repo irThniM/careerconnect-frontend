@@ -1,3 +1,26 @@
+export type CandidateResumeData = {
+  fileName: string;
+  fileSizeBytes: number;
+  contentType: string;
+  processingStatus: string;
+  processingError: string | null;
+  uploadedAt: string;
+  downloadUrl: string;
+  suggestedFullName: string | null;
+  workExperiences: CandidateResumeSection[];
+  projects: CandidateResumeSection[];
+  education: CandidateResumeSection[];
+};
+
+export type CandidateResumeSection = {
+  title: string;
+  organization: string | null;
+  period: string | null;
+  description: string | null;
+};
+
+export type CandidateResumeSections = Pick<CandidateResumeData, 'workExperiences' | 'projects' | 'education'>;
+
 export type CandidateProfileData = {
   email: string;
   fullName: string;
@@ -7,9 +30,11 @@ export type CandidateProfileData = {
   summary: string | null;
   isLookingForJob: boolean;
   updatedAt: string;
+  skills: string[];
+  resume: CandidateResumeData | null;
 };
 
-export type ProfileForm = Omit<CandidateProfileData, 'email' | 'updatedAt'>;
+export type ProfileForm = Omit<CandidateProfileData, 'email' | 'updatedAt' | 'skills' | 'resume'>;
 
 export const emptyProfileForm: ProfileForm = {
   fullName: '',
