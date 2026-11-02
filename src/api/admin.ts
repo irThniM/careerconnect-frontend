@@ -1,5 +1,19 @@
 import { apiFetch } from './client';
 
+export type AdminPackage = {
+  id: number;
+  name: string;
+  description: string | null;
+  price: number;
+  durationDays: number;
+  memberLimit: number | null;
+  jobPostLimit: number | null;
+  isActive: boolean;
+  createdAt: string;
+};
+
+export type SaveAdminPackage = Omit<AdminPackage, 'id' | 'createdAt'>;
+export type AdminPackageDeleteResult = { deleted: boolean; isActive: boolean; message: string };
 export type AdminDashboardStats = {
   totalCandidates: number;
   totalCompanies: number;
@@ -52,6 +66,23 @@ async function getAdminResource<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function saveAdminResource<T>(path: string, method: 'POST' | 'PUT' | 'DELETE', body?: unknown): Promise<T> {
+  const response = await apiFetch(path, {
+    method,
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
+  if (!response.ok) {
+    let message = `Máy chủ trả về lỗi ${response.status}.`;
+    try { const payload = await response.json() as { message?: string }; message = payload.message || message; } catch { /* Keep status fallback. */ }
+    throw new Error(message);
+  }
+  return response.json() as Promise<T>;
+}
+
+export const getAdminPackages = () => getAdminResource<AdminPackage[]>('Admin/packages');
+export const createAdminPackage = (packageData: SaveAdminPackage) => saveAdminResource<AdminPackage>('Admin/packages', 'POST', packageData);
+export const updateAdminPackage = (id: number, packageData: SaveAdminPackage) => saveAdminResource<AdminPackage>(`Admin/packages/${id}`, 'PUT', packageData);
+export const deleteAdminPackage = (id: number) => saveAdminResource<AdminPackageDeleteResult>(`Admin/packages/${id}`, 'DELETE');
 export const getAdminDashboardStats = () => getAdminResource<AdminDashboardStats>('Admin/dashboard-stats');
 export const getAdminUsers = () => getAdminResource<AdminUser[]>('Admin/users');
 export const getAdminCompanies = () => getAdminResource<AdminCompany[]>('Admin/companies');

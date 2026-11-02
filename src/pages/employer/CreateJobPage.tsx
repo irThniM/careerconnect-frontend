@@ -17,6 +17,7 @@ import { getEmployerJobForEdit, updateEmployerJob, type EmployerJobEdit } from '
 interface CompanyPostingProfile {
   status: string;
   jobPostCreditsRemaining: number;
+  hasUnlimitedJobPosts?: boolean;
 }
 
 const CreateJobPage = () => {
@@ -106,7 +107,8 @@ const CreateJobPage = () => {
 
   const isCompanyVerified = companyProfile?.status === 'ACTIVE';
   const remainingJobPostCredits = companyProfile?.jobPostCreditsRemaining ?? 0;
-  const canPost = !isLoadingCompanyProfile && isCompanyVerified && remainingJobPostCredits > 0;
+  const canPost = !isLoadingCompanyProfile && isCompanyVerified
+    && (companyProfile?.hasUnlimitedJobPosts === true || remainingJobPostCredits > 0);
 
   // 1. Khởi tạo form
   const methods = useForm<CreateJobFormValues>({
@@ -233,7 +235,9 @@ const CreateJobPage = () => {
       setCompanyProfile((current) => current
         ? {
           ...current,
-          jobPostCreditsRemaining: Math.max(0, current.jobPostCreditsRemaining - 1),
+          jobPostCreditsRemaining: current.hasUnlimitedJobPosts
+            ? current.jobPostCreditsRemaining
+            : Math.max(0, current.jobPostCreditsRemaining - 1),
         }
         : current);
       toast.success('Đăng tin thành công! AI đã tạo xong Vector.');

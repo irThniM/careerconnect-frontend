@@ -7,6 +7,7 @@ const labels: Record<string, string> = {
   RECEIVED: 'Đã tiếp nhận', REVIEWING: 'Đang xem xét', INTERVIEW: 'Mời phỏng vấn',
   OFFERED: 'Đề nghị nhận việc', REJECTED: 'Chưa phù hợp', HIRED: 'Đã tuyển', WITHDRAWN: 'Đã rút hồ sơ',
 };
+const interviewDate = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'full', timeStyle: 'short' });
 
 const CandidateApplicationsPage = () => {
   const [applications, setApplications] = useState<JobApplication[]>([]);
@@ -36,6 +37,7 @@ const CandidateApplicationsPage = () => {
           <div className="mt-5 space-y-3">{applications.map((application) => <article key={application.id} className="rounded-xl border border-indigo-100 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3"><div><Link to={`/jobs/${application.jobId}`} className="font-bold text-slate-950 hover:text-indigo-800">{application.jobTitle}</Link><p className="mt-1 text-sm text-slate-600">{application.companyName}</p><p className="mt-2 text-xs text-slate-500">Đã gửi {new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(new Date(application.appliedAt))} · CV: {application.resumeFileName}</p></div><span className="rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-900">{labels[application.status] || application.status}</span></div>
             {application.coverLetter && <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-700">{application.coverLetter}</p>}
+            {application.interviews.filter((interview) => interview.status === 'PROPOSED').map((interview) => <div key={interview.id} className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4"><p className="flex items-center gap-2 font-bold text-indigo-950"><span className="material-symbols-outlined">event</span>Lịch phỏng vấn</p><p className="mt-2 text-sm text-indigo-950">{interviewDate.format(new Date(interview.scheduledStart))}</p>{interview.note && <p className="mt-2 whitespace-pre-wrap text-sm text-indigo-900">{interview.note}</p>}</div>)}
             {application.statusHistory.length > 0 && <details className="mt-4 border-t border-slate-100 pt-3"><summary className="cursor-pointer text-xs font-semibold text-indigo-800">Lịch sử trạng thái</summary><ol className="mt-3 space-y-2">{application.statusHistory.map((history, index) => <li key={`${history.createdAt}-${index}`} className="flex gap-2 text-xs text-slate-600"><span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-indigo-500"/><span><strong className="text-slate-800">{labels[history.newStatus] || history.newStatus}</strong>{history.note && ` · ${history.note}`}<span className="block text-slate-400">{new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(history.createdAt))}</span></span></li>)}</ol></details>}
           </article>)}</div>
         )}

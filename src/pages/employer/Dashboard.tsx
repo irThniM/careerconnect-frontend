@@ -62,9 +62,9 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans text-slate-800 antialiased">
-      <DashboardSidebar companyName={companyName} userEmail={userEmail} isVerified={isVerified} jobPostCreditsRemaining={dashboard?.jobPostCreditsRemaining ?? 0}/>
+      <DashboardSidebar companyName={companyName} userEmail={userEmail} isVerified={isVerified} jobPostCreditsRemaining={dashboard?.jobPostCreditsRemaining ?? 0} hasUnlimitedJobPosts={dashboard?.hasUnlimitedJobPosts ?? false}/>
       <div className="flex min-h-screen flex-1 flex-col pl-64">
-        <DashboardHeader isVerified={isVerified} canPost={isVerified && (dashboard?.jobPostCreditsRemaining ?? 0) > 0} isLoading={isLoading} onRefresh={() => setRefreshKey((current) => current + 1)}/>
+        <DashboardHeader isVerified={isVerified} canPost={isVerified && (dashboard?.hasUnlimitedJobPosts === true || (dashboard?.jobPostCreditsRemaining ?? 0) > 0)} isLoading={isLoading} onRefresh={() => setRefreshKey((current) => current + 1)}/>
         <main className="mx-auto w-full max-w-[1440px] flex-1 space-y-6 p-5 sm:p-8">
           <DashboardStats dashboard={dashboard} isVerified={isVerified} isLoading={isLoading}/>
           <DashboardMainContent dashboard={dashboard} isVerified={isVerified} isLoading={isLoading} error={error} onRetry={() => setRefreshKey((current) => current + 1)}/>

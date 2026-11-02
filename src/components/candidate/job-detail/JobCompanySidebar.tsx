@@ -19,7 +19,7 @@ const JobCompanySidebar: React.FC<{ job: JobDetails }> = ({ job }) => {
 
   return (
     <aside className="space-y-space-md lg:sticky lg:top-6 lg:col-span-4">
-      <CandidateApplyCard jobId={job.id}/>
+      <CandidateApplyCard jobId={job.id} applicationDeadline={job.applicationDeadline}/>
       <section className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-space-lg shadow-sm">
         <div className="flex items-center gap-space-sm"><div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary-fixed font-headline-md text-headline-md font-bold text-primary">{companyInitials(company.name)}</div><div className="min-w-0"><h2 className="font-job-title-card text-job-title-card font-bold text-on-surface">{company.name}</h2><p className="mt-1 font-body-compact text-body-compact text-on-surface-variant">{company.industry || 'Chưa cập nhật ngành nghề'}</p></div></div>
         {company.description && <div className="mt-space-md border-t border-outline-variant/40 pt-space-md"><h3 className="font-body-compact text-body-compact font-semibold text-on-surface">Giới thiệu công ty</h3><p className="mt-2 whitespace-pre-line font-body-compact text-body-compact leading-6 text-on-surface-variant">{company.description}</p></div>}

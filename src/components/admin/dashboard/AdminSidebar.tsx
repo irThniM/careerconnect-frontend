@@ -4,7 +4,7 @@ import { clearAuthSession } from '../../../utils/auth';
 
 const menuGroups = [
   { label: 'Tổng quan', items: [{ path: '/admin/dashboard', icon: 'space_dashboard', label: 'Bảng điều khiển' }] },
-  { label: 'Quản lý hệ thống', items: [{ path: '/admin/companies', icon: 'apartment', label: 'Doanh nghiệp' }, { path: '/admin/users', icon: 'group', label: 'Tài khoản' }] },
+  { label: 'Quản lý hệ thống', items: [{ path: '/admin/companies', icon: 'apartment', label: 'Doanh nghiệp' }, { path: '/admin/users', icon: 'group', label: 'Tài khoản' }, { path: '/admin/packages', icon: 'inventory_2', label: 'Gói dịch vụ' }] },
   { label: 'Tài khoản', items: [{ path: '/admin/profile', icon: 'account_circle', label: 'Hồ sơ cá nhân' }] },
 ];
 

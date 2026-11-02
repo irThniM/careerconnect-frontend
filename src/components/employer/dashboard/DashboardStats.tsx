@@ -23,7 +23,7 @@ const DashboardStats: React.FC<Props> = ({ dashboard, isVerified, isLoading }) =
             <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{stat.label}</p>
             <span className={`flex h-9 w-9 items-center justify-center rounded-lg ${stat.color}`}><span className="material-symbols-outlined text-xl">{stat.icon}</span></span>
           </div>
-          <p className="mt-3 text-3xl font-extrabold tabular-nums text-slate-900">{isLoading ? '…' : stat.value == null ? '—' : new Intl.NumberFormat('vi-VN').format(stat.value)}</p>
+          <p className="mt-3 text-3xl font-extrabold tabular-nums text-slate-900">{isLoading ? '…' : stat.label === 'Lượt đăng còn lại' && dashboard?.hasUnlimitedJobPosts ? '∞' : stat.value == null ? '—' : new Intl.NumberFormat('vi-VN').format(stat.value)}</p>
           <p className="mt-2 text-xs text-slate-500">{stat.note}</p>
         </article>
       ))}

@@ -14,6 +14,7 @@ export type EmployerDashboard = {
   companyName: string;
   companyStatus: string;
   jobPostCreditsRemaining: number;
+  hasUnlimitedJobPosts: boolean;
   totalJobs: number;
   openJobs: number;
   pendingJobs: number;

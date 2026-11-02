@@ -12,9 +12,17 @@ const statusLabels: Record<string, string> = {
   HIRED: 'Đã tuyển',
 };
 
-export default function CandidateApplyCard({ jobId }: { jobId: number }) {
+function isExpired(deadline: string | null): boolean {
+  if (!deadline) return false;
+  const deadlineDate = new Date(deadline);
+  if (Number.isNaN(deadlineDate.getTime())) return false;
+  return deadlineDate.toISOString().slice(0, 10) < new Date().toISOString().slice(0, 10);
+}
+
+export default function CandidateApplyCard({ jobId, applicationDeadline }: { jobId: number; applicationDeadline: string | null }) {
   const signedIn = isAuthenticated();
   const isCandidate = isAuthenticatedAs('Candidate');
+  const expired = isExpired(applicationDeadline);
   const [application, setApplication] = useState<{ status: string } | null>(null);
   const [coverLetter, setCoverLetter] = useState('');
   const [message, setMessage] = useState('');
@@ -31,8 +39,6 @@ export default function CandidateApplyCard({ jobId }: { jobId: number }) {
       .finally(() => { if (active) setIsLoading(false); });
     return () => { active = false; };
   }, [isCandidate, jobId]);
-
-  if (signedIn && !isCandidate) return null;
 
   const apply = async () => {
     setIsSubmitting(true);
@@ -51,7 +57,11 @@ export default function CandidateApplyCard({ jobId }: { jobId: number }) {
   return (
     <section className="rounded-2xl border border-outline-variant/50 bg-surface-container-lowest p-space-lg shadow-sm">
       <h2 className="font-headline-md text-headline-md font-bold text-on-surface">Ứng tuyển vị trí này</h2>
-      {!signedIn ? (
+      {expired ? (
+        <><p className="mt-2 inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700">Tin tuyển dụng đã hết hạn</p><p className="mt-2 font-body-compact text-body-compact text-on-surface-variant">Bạn vẫn có thể xem tin này, nhưng vị trí đã ngừng nhận hồ sơ.</p></>
+      ) : signedIn && !isCandidate ? (
+        <p className="mt-2 font-body-compact text-body-compact text-on-surface-variant">Tính năng ứng tuyển chỉ dành cho tài khoản ứng viên.</p>
+      ) : !signedIn ? (
         <><p className="mt-2 font-body-compact text-body-compact text-on-surface-variant">Đăng nhập tài khoản ứng viên để gửi hồ sơ.</p><Link to="/login" className="mt-space-md inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 font-semibold text-on-primary hover:bg-primary-container">Đăng nhập ứng viên</Link></>
       ) : isLoading ? (
         <p className="mt-3 text-sm text-on-surface-variant">Đang kiểm tra hồ sơ…</p>

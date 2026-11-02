@@ -10,6 +10,15 @@ const labels: Record<string, string> = {
 const statusOptions = ['REVIEWING', 'INTERVIEW', 'OFFERED', 'REJECTED', 'HIRED'];
 const applicationDate = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium', timeStyle: 'short' });
 const jobDate = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' });
+const interviewDate = new Intl.DateTimeFormat('vi-VN', { dateStyle: 'full', timeStyle: 'short' });
+
+function toLocalDateTimeValue(value: string | undefined): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+  return date.toISOString().slice(0, 16);
+}
 
 function jobStatusLabel(status: string): string {
   switch (status.toUpperCase()) {
@@ -30,6 +39,7 @@ export default function EmployerApplicationsPage() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<Record<number, string>>({});
   const [notes, setNotes] = useState<Record<number, string>>({});
+  const [interviewTimes, setInterviewTimes] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [error, setError] = useState('');
@@ -78,11 +88,16 @@ export default function EmployerApplicationsPage() {
   const saveStatus = async (application: JobApplication) => {
     const newStatus = selectedStatuses[application.id] || application.status;
     if (!statusOptions.includes(newStatus)) return;
+    const localInterviewTime = interviewTimes[application.id]
+      ?? toLocalDateTimeValue(application.interviews.find((interview) => interview.status === 'PROPOSED')?.scheduledStart);
+    const scheduledStart = newStatus === 'INTERVIEW' && localInterviewTime
+      ? new Date(localInterviewTime).toISOString()
+      : undefined;
     setBusyId(application.id);
     setError('');
     setMessage('');
     try {
-      const updated = await updateApplicationStatus(application.id, newStatus, notes[application.id] || '');
+      const updated = await updateApplicationStatus(application.id, newStatus, notes[application.id] || '', scheduledStart);
       setApplications((current) => current.map((item) => item.id === updated.id
         ? { ...updated, matchPercentage: item.matchPercentage }
         : item));
@@ -148,13 +163,20 @@ export default function EmployerApplicationsPage() {
               {loading ? <div className="mt-4 space-y-3">{[1, 2].map((item) => <div key={item} className="h-40 animate-pulse rounded-xl bg-white" />)}</div> : !error && applications.length === 0 ? <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-600">Tin này chưa có ứng viên nộp hồ sơ.</div> : (
                 <div className="mt-4 space-y-4">{applications.map((application, index) => {
                   const isFinal = ['HIRED', 'REJECTED'].includes(application.status);
+                  const selectedStatus = selectedStatuses[application.id] ?? application.status;
+                  const currentInterview = application.interviews.find((interview) => interview.status === 'PROPOSED') ?? application.interviews[0];
+                  const scheduledValue = interviewTimes[application.id] ?? toLocalDateTimeValue(currentInterview?.scheduledStart);
+                  const scheduleChanged = selectedStatus === 'INTERVIEW' && !!scheduledValue
+                    && new Date(scheduledValue).toISOString() !== currentInterview?.scheduledStart;
+                  const canSave = selectedStatus !== application.status || scheduleChanged;
                   return <article key={application.id} className="rounded-xl border border-slate-100 bg-white p-5 shadow-sm">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="flex min-w-0 items-start gap-3"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-sm font-extrabold text-blue-900">{index + 1}</span><div className="min-w-0"><div className="flex flex-wrap items-center gap-2"><h2 className="font-bold text-slate-950">{application.candidateName}</h2>{typeof application.matchPercentage === 'number' ? <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-800">Phù hợp {application.matchPercentage}%</span> : <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600">Chưa có điểm vector</span>}</div><p className="mt-1 text-sm text-slate-600">{application.candidateTitle || 'Ứng viên'} · Ứng tuyển <strong>{application.jobTitle}</strong></p><p className="mt-1 text-xs text-slate-500">{applicationDate.format(new Date(application.appliedAt))} · Trạng thái: {labels[application.status] || application.status}</p></div></div>
                       <button type="button" onClick={() => downloadResume(application)} disabled={busyId === application.id} className="inline-flex items-center gap-1 rounded-lg border border-indigo-200 px-3 py-2 text-sm font-semibold text-indigo-900 hover:bg-indigo-50 disabled:opacity-60"><span className="material-symbols-outlined text-base">download</span>Tải CV</button>
                     </div>
                     {application.coverLetter && <p className="mt-3 rounded-lg bg-slate-50 p-3 text-sm leading-6 text-slate-700">{application.coverLetter}</p>}
-                    {!isFinal && <div className="mt-4 grid gap-3 border-t border-slate-100 pt-4 sm:grid-cols-[1fr_2fr_auto]"><select value={selectedStatuses[application.id] ?? application.status} onChange={(event) => setSelectedStatuses((current) => ({ ...current, [application.id]: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" aria-label={`Trạng thái hồ sơ ${application.candidateName}`}>{application.status === 'RECEIVED' && <option value="RECEIVED">Đã tiếp nhận</option>}{statusOptions.map((status) => <option key={status} value={status}>{labels[status]}</option>)}</select><input value={notes[application.id] ?? ''} onChange={(event) => setNotes((current) => ({ ...current, [application.id]: event.target.value }))} maxLength={1000} placeholder="Ghi chú phản hồi (không bắt buộc)" className="rounded-lg border border-slate-200 px-3 py-2 text-sm"/><button type="button" onClick={() => saveStatus(application)} disabled={busyId === application.id || (selectedStatuses[application.id] ?? application.status) === application.status} className="rounded-lg bg-blue-950 px-4 py-2 text-sm font-bold text-white hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-50">{busyId === application.id ? 'Đang lưu…' : 'Cập nhật'}</button></div>}
+                    {currentInterview && <div className={`mt-4 rounded-lg p-3 text-sm ${currentInterview.status === 'CANCELLED' ? 'bg-slate-50 text-slate-600' : 'bg-indigo-50 text-indigo-950'}`}><strong>{currentInterview.status === 'CANCELLED' ? 'Lịch phỏng vấn đã hủy' : 'Lịch phỏng vấn'}</strong><p className="mt-1">{interviewDate.format(new Date(currentInterview.scheduledStart))}</p>{currentInterview.note && <p className="mt-1 whitespace-pre-wrap text-xs">{currentInterview.note}</p>}</div>}
+                    {!isFinal && <div className="mt-4 border-t border-slate-100 pt-4"><div className="grid gap-3 sm:grid-cols-[1fr_2fr_auto]"><select value={selectedStatus} onChange={(event) => setSelectedStatuses((current) => ({ ...current, [application.id]: event.target.value }))} className="rounded-lg border border-slate-200 px-3 py-2 text-sm" aria-label={`Trạng thái hồ sơ ${application.candidateName}`}>{application.status === 'RECEIVED' && <option value="RECEIVED">Đã tiếp nhận</option>}{statusOptions.map((status) => <option key={status} value={status}>{labels[status]}</option>)}</select><input value={notes[application.id] ?? ''} onChange={(event) => setNotes((current) => ({ ...current, [application.id]: event.target.value }))} maxLength={1000} placeholder={selectedStatus === 'INTERVIEW' ? 'Link họp, địa điểm hoặc ghi chú buổi phỏng vấn' : 'Ghi chú phản hồi (không bắt buộc)'} className="rounded-lg border border-slate-200 px-3 py-2 text-sm"/><button type="button" onClick={() => saveStatus(application)} disabled={busyId === application.id || !canSave || (selectedStatus === 'INTERVIEW' && !scheduledValue)} className="rounded-lg bg-blue-950 px-4 py-2 text-sm font-bold text-white hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-50">{busyId === application.id ? 'Đang lưu…' : 'Cập nhật'}</button></div>{selectedStatus === 'INTERVIEW' && <label className="mt-3 block text-sm font-semibold text-slate-800">Ngày giờ phỏng vấn<input type="datetime-local" value={scheduledValue} onChange={(event) => setInterviewTimes((current) => ({ ...current, [application.id]: event.target.value }))} className="mt-1 block w-full rounded-lg border border-indigo-200 bg-indigo-50/40 px-3 py-2.5 text-sm"/><span className="mt-1 block text-xs font-normal text-slate-500">Ứng viên sẽ thấy lịch này trong mục “Đã ứng tuyển”.</span></label>}</div>}
                   </article>;
                 })}</div>
               )}

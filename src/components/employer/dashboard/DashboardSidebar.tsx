@@ -6,9 +6,10 @@ interface Props {
   userEmail: string;
   isVerified: boolean;
   jobPostCreditsRemaining: number;
+  hasUnlimitedJobPosts: boolean;
 }
 
-const DashboardSidebar: React.FC<Props> = ({ companyName, userEmail, isVerified, jobPostCreditsRemaining }) => {
+const DashboardSidebar: React.FC<Props> = ({ companyName, userEmail, isVerified, jobPostCreditsRemaining, hasUnlimitedJobPosts }) => {
   const navigate = useNavigate();
 
   return (
@@ -40,7 +41,10 @@ const DashboardSidebar: React.FC<Props> = ({ companyName, userEmail, isVerified,
         <Link to="/employer/dashboard/applications" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors">
           <span className="material-symbols-outlined text-[20px]">groups</span> Hồ sơ ứng tuyển
         </Link>
-        <button onClick={() => navigate('/employer/jobs/create')} disabled={!isVerified || jobPostCreditsRemaining <= 0} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50">
+        <Link to="/employer/dashboard/billing" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors">
+          <span className="material-symbols-outlined text-[20px]">workspace_premium</span> Gói dịch vụ & thanh toán
+        </Link>
+        <button onClick={() => navigate('/employer/jobs/create')} disabled={!isVerified || (!hasUnlimitedJobPosts && jobPostCreditsRemaining <= 0)} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50">
           <span className="material-symbols-outlined text-[20px]">post_add</span> Đăng tin tuyển dụng
         </button>
         <button onClick={() => navigate('/employer/profile')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium transition-colors">
@@ -55,7 +59,7 @@ const DashboardSidebar: React.FC<Props> = ({ companyName, userEmail, isVerified,
           </div>
           <div className="flex flex-col">
             <span className="text-[12px] text-emerald-700 font-bold">Lượt đăng tin</span>
-            <span className="text-[10px] text-emerald-600">Còn {jobPostCreditsRemaining} lượt</span>
+            <span className="text-[10px] text-emerald-600">{hasUnlimitedJobPosts ? 'Không giới hạn lượt' : `Còn ${jobPostCreditsRemaining} lượt`}</span>
           </div>
         </div>
       )}

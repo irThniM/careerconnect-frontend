@@ -19,6 +19,7 @@ const CandidateProfile = lazy(() => import('./pages/candidate/CandidateProfile')
 const RecommendedJobs = lazy(() => import('./pages/candidate/RecommendedJobs'));
 const CandidateApplicationsPage = lazy(() => import('./features/applications/pages/CandidateApplicationsPage'));
 const EmployerApplicationsPage = lazy(() => import('./features/applications/pages/EmployerApplicationsPage'));
+const CompanySubscriptionPage = lazy(() => import('./features/billing/pages/CompanySubscriptionPage'));
 const EmployerHome = lazy(() => import('./pages/employer/Home'));
 const EmployerDashboard = lazy(() => import('./pages/employer/Dashboard'));
 const EmployerLogin = lazy(() => import('./pages/employer/EmployerLogin'));
@@ -30,6 +31,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminUsersPage = lazy(() => import('./pages/admin/AdminUsersPage'));
 const AdminCompaniesPage = lazy(() => import('./pages/admin/AdminCompaniesPage'));
 const AdminProfilePage = lazy(() => import('./pages/admin/AdminProfilePage'));
+const AdminPackagesPage = lazy(() => import('./pages/admin/AdminPackagesPage'));
 
 function App() {
   return (
@@ -59,6 +61,7 @@ function App() {
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsersPage />} />
           <Route path="companies" element={<AdminCompaniesPage />} />
+          <Route path="packages" element={<AdminPackagesPage />} />
           <Route path="profile" element={<AdminProfilePage />} />
         </Route>
 
@@ -87,6 +90,7 @@ function App() {
         <Route path="/employer/dashboard" element={<EmployerDashboardLayout />}>
           <Route index element={<EmployerDashboard />} />
           <Route path="applications" element={<EmployerApplicationsPage />} />
+          <Route path="billing" element={<CompanySubscriptionPage />} />
         </Route>
         <Route path="/employer/profile" element={<CompanyProfile />} />
       </Routes>

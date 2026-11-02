@@ -48,7 +48,7 @@ function nextAllowedDeadline(job: EmployerDashboardJob): string {
 
 const DashboardMainContent: React.FC<Props> = ({ dashboard, isVerified, isLoading, error, onRetry }) => {
   const navigate = useNavigate();
-  const canPost = isVerified && (dashboard?.jobPostCreditsRemaining ?? 0) > 0;
+  const canPost = isVerified && (dashboard?.hasUnlimitedJobPosts === true || (dashboard?.jobPostCreditsRemaining ?? 0) > 0);
   const [deadlineTarget, setDeadlineTarget] = useState<EmployerDashboardJob | null>(null);
   const [deadlineValue, setDeadlineValue] = useState('');
   const [deadlineBusy, setDeadlineBusy] = useState(false);

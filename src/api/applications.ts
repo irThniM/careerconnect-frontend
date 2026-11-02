@@ -7,6 +7,15 @@ export type ApplicationStatusHistory = {
   createdAt: string;
 };
 
+export type InterviewSchedule = {
+  id: number;
+  applicationId: number;
+  scheduledStart: string;
+  status: string;
+  note: string | null;
+  responseNote: string | null;
+};
+
 export type JobApplication = {
   id: number;
   jobId: number;
@@ -21,6 +30,7 @@ export type JobApplication = {
   appliedAt: string;
   updatedAt: string;
   statusHistory: ApplicationStatusHistory[];
+  interviews: InterviewSchedule[];
 };
 
 async function getErrorMessage(response: Response): Promise<string> {
@@ -60,10 +70,11 @@ export async function updateApplicationStatus(
   applicationId: number,
   newStatus: string,
   note: string,
+  scheduledStart?: string,
 ): Promise<JobApplication> {
   const response = await apiFetch(`applications/${applicationId}/status`, {
     method: 'PUT',
-    body: JSON.stringify({ newStatus, note: note.trim() || null }),
+    body: JSON.stringify({ newStatus, note: note.trim() || null, scheduledStart: scheduledStart || null }),
   });
   if (!response.ok) throw new Error(await getErrorMessage(response));
   return response.json() as Promise<JobApplication>;
